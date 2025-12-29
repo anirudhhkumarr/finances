@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { migrateLegacyData } from '../utils/migration';
 import { fillDataGaps, generateMonthRecord } from '../utils/dataGapFiller';
 import { CategoryMap } from '../utils/categoryConfig';
+import { encryptBackup, decryptBackup } from '../utils/crypto';
 
 const FinanceContext = createContext();
 
@@ -10,7 +10,6 @@ const DATA_KEY = 'financeAppData';
 const defaultData = {
     records: [],
     transactions: [], // { id, date, category, amount, desc }
-    planning: { currentBalance: 0, futureExpenses: [] },
     balanceOverrides: {} // Map 'YYYY-MM' -> Amount
 };
 
@@ -35,36 +34,90 @@ export const FinanceProvider = ({ children }) => {
         localStorage.setItem(DATA_KEY, JSON.stringify(appData));
     }, [appData]);
 
-    // Expose Migration Tool
-    useEffect(() => {
-        window.migrateData = () => {
-            const { records, transactions } = migrateLegacyData();
-            // Fill gaps starting from Jan 2020
-            const filledRecords = fillDataGaps(records, transactions);
+    // Password Modal State
+    const [passwordRequest, setPasswordRequest] = useState(null); // { mode: 'export'|'import', onConfirm: (pass) => void, onCancel: () => void }
 
-            setAppData(prev => ({
-                ...prev,
-                records: filledRecords,
-                transactions: transactions
-            }));
-            console.log("Migration Complete: ", filledRecords.length, "records (inc. filled)", transactions.length, "transactions");
+    // Export Data (Encrypted Backup)
+    const exportData = () => {
+        setPasswordRequest({
+            mode: 'export',
+            onConfirm: async (password) => {
+                setPasswordRequest(null);
+                try {
+                    let payload, filename;
+                    if (!password) {
+                        payload = JSON.stringify(appData, null, 2);
+                        filename = `finance_backup_${new Date().toISOString().slice(0, 10)}.json`;
+                    } else {
+                        const encrypted = await encryptBackup(appData, password);
+                        payload = JSON.stringify(encrypted);
+                        filename = `finance_backup_SECURE_${new Date().toISOString().slice(0, 10)}.json`;
+                    }
+
+
+
+                    // Fallback: Standard Download Link
+                    const blob = new Blob([payload], { type: "application/octet-stream" });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement("a");
+                    link.href = url;
+                    link.download = filename;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                } catch (e) {
+                    alert("Export Failed: " + e.message);
+                }
+            },
+            onCancel: () => setPasswordRequest(null)
+        });
+    };
+
+    // Import Data (Restore)
+    const importData = (file) => {
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            try {
+                const json = JSON.parse(e.target.result);
+
+                // Detect Encrypted Format
+                if (json.v === 1 && json.salt && json.iv && json.data) {
+                    // Trigger Password Modal
+                    setPasswordRequest({
+                        mode: 'import',
+                        onConfirm: async (password) => {
+                            setPasswordRequest(null);
+                            if (!password) return; // Cannot decrypt without password
+                            try {
+                                const restoredData = await decryptBackup(json, password);
+                                if (restoredData && restoredData.records) {
+                                    setAppData(restoredData);
+                                    alert("Data Restored Successfully!");
+                                } else {
+                                    alert("Invalid Backup Structure");
+                                }
+                            } catch (err) {
+                                alert("Failed: Incorrect Password or File Corrupt");
+                            }
+                        },
+                        onCancel: () => setPasswordRequest(null)
+                    });
+                } else {
+                    // Plain JSON
+                    if (json.records && Array.isArray(json.records)) {
+                        setAppData(json);
+                        alert("Data Restored Successfully!");
+                    } else {
+                        alert("Invalid Backup File");
+                    }
+                }
+            } catch (err) {
+                console.error("Import Failed", err);
+                alert("Failed to parse backup file");
+            }
         };
-
-        // Expose manual clear triggers
-        window.clearData = () => {
-            console.log("Clearing Data...");
-            localStorage.removeItem('financeAppData');
-
-            // Even on clear, we want the structure from 2020
-            const filledRecords = fillDataGaps([], []);
-
-            setAppData({ ...defaultData, records: filledRecords, transactions: [], balanceOverrides: {} });
-            console.log("Data Cleared & Re-Initialized from 2020.");
-        };
-
-        // Auto-run for easy re-import (User requested)
-        // setTimeout(() => window.migrateData(), 1000); 
-    }, []);
+        reader.readAsText(file);
+    };
 
     const saveTransaction = (dateStr, id, field, val, overrides = {}) => {
         let value = val;
@@ -182,8 +235,8 @@ export const FinanceProvider = ({ children }) => {
                 const other = parseFloat(record.income.other) || 0;
                 const k401 = parseFloat(record.savings['401k']) || 0;
 
-                // Derived Tax
-                const derivedTax = (gross + other) - k401 - net;
+                // Derived Tax: Gross - 401k - Net
+                const derivedTax = gross - k401 - net;
 
                 record.income.tax = derivedTax;
             }
@@ -203,24 +256,14 @@ export const FinanceProvider = ({ children }) => {
         const prevId = prevMonthDate.toISOString().slice(0, 7);
         const prevRecord = nextRecords.find(r => r.id === prevId);
 
-        // Regenerate the record using system logic
-        const newRecord = generateMonthRecord(monthId, prevRecord, data.transactions || []);
+        // Regenerate the record using system logic (preferring current values over previous)
+        const currentRecord = recordIdx !== -1 ? nextRecords[recordIdx] : null;
+        const newRecord = generateMonthRecord(monthId, prevRecord, data.transactions || [], currentRecord);
 
         if (recordIdx === -1) {
             nextRecords.push(newRecord);
         } else {
             nextRecords[recordIdx] = newRecord;
-        }
-
-        // Update Derived Fields (Tax)
-        // Note: generateMonthRecord copies raw values; Tax is derived
-        const record = nextRecords[recordIdx !== -1 ? recordIdx : nextRecords.length - 1];
-        if (record.income && record.savings) {
-            const gross = parseFloat(record.income.gross) || 0;
-            const net = parseFloat(record.income.net) || 0;
-            const other = parseFloat(record.income.other) || 0;
-            const k401 = parseFloat(record.savings['401k']) || 0;
-            record.income.tax = (gross + other) - k401 - net;
         }
 
         return { ...data, records: nextRecords };
@@ -250,6 +293,10 @@ export const FinanceProvider = ({ children }) => {
             updateRecordValue,
             CategoryMap,
             setBalanceOverride,
+            exportData,
+            importData,
+            passwordRequest, // State for Modal
+            setPasswordRequest,
             syncRecord: (monthId) => setAppData(prev => syncMonth(prev, monthId)) // Wrapper to trigger state update
         }}>
             {children}

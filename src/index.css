@@ -799,3 +799,88 @@ input[type=number] {
     opacity: 1 !important;
     color: #fff; /* Brighter on direct hover */
 }
+
+/* Make Sync Button Always Visible (Muted) */
+.dc-sync-btn {
+    opacity: 0.3 !important; /* Always visible but faint */
+    color: #999;
+}
+
+.dc-sync-btn:hover {
+    opacity: 1 !important;
+    color: #4caf50; /* Green on hover */
+    transform: scale(1.1);
+}
+
+/* Password Dialog */
+.pwd-dialog-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
+
+.pwd-dialog-content {
+    background: #1e1e1e;
+    padding: 2rem;
+    border-radius: 8px;
+    width: 320px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    border: 1px solid #333;
+}
+
+.pwd-title {
+    margin: 0 0 0.5rem 0;
+    color: #fff;
+    font-size: 1.25rem;
+}
+
+.pwd-desc {
+    color: #888;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.pwd-input {
+    width: 100%;
+    background: #2a2a2a;
+    border: 1px solid #444;
+    padding: 0.75rem;
+    color: #fff;
+    border-radius: 4px;
+    margin-bottom: 1.5rem;
+    font-size: 1rem;
+    outline: none;
+}
+.pwd-input:focus {
+    border-color: #4caf50;
+}
+
+.pwd-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+
+.pwd-btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+.pwd-btn.cancel {
+    background: transparent;
+    color: #888;
+}
+.pwd-btn.confirm {
+    background: #4caf50;
+    color: white;
+}
+.pwd-btn:hover {
+    opacity: 0.9;
+}

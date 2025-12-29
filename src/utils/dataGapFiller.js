@@ -1,58 +1,54 @@
 import { CategoryMap } from './categoryConfig';
 
-export const generateMonthRecord = (monthId, prevRecord = null, transactions = []) => {
-    // 1. Base: Copy Previous or Defaults
+export const generateMonthRecord = (monthId, prevRecord = null, transactions = [], currentRecord = null) => {
+    // 1. Base: Prefer Current Record (Manual), then Previous (Carry-over), then Default
     let lastValues = {
         income: { gross: 0, gross_expr: null, net: 0, net_expr: null, other: 0, other_expr: null, tax: 0, tax_expr: null },
         savings: { '401k': 0, '401k_expr': null },
         expenses: { rent: 0, rent_expr: null }
     };
 
-    if (prevRecord) {
-        lastValues = {
-            income: {
-                gross: Number(prevRecord.income?.gross) || 0,
-                gross_expr: prevRecord.income?.gross_expr || null,
-                net: Number(prevRecord.income?.net) || 0,
-                net_expr: prevRecord.income?.net_expr || null,
-                other: Number(prevRecord.income?.other) || 0,
-                other_expr: prevRecord.income?.other_expr || null,
-                tax: Number(prevRecord.income?.tax) || 0,
-                tax_expr: prevRecord.income?.tax_expr || null
-            },
-            savings: {
-                '401k': Number(prevRecord.savings?.['401k']) || 0,
-                '401k_expr': prevRecord.savings?.['401k_expr'] || null
-            },
-            expenses: {
-                rent: Number(prevRecord.expenses?.rent) || 0,
-                rent_expr: prevRecord.expenses?.rent_expr || null
-            }
-        };
-    }
+    // Helper to pick best value
+    const pick = (group, field) => {
+        // Current Record (if exists and valid)
+        if (currentRecord && currentRecord[group]) {
+            const val = currentRecord[group][field];
+            if (val !== undefined && val !== null && val !== '') return { val: Number(val), expr: currentRecord[group][field + '_expr'] || null };
+        }
+        // Previous Record (Carry-over)
+        if (prevRecord && prevRecord[group]) {
+            const val = prevRecord[group][field];
+            if (val !== undefined && val !== null && val !== '') return { val: Number(val), expr: prevRecord[group][field + '_expr'] || null };
+        }
+        return { val: 0, expr: null };
+    };
+
+    const incGross = pick('income', 'gross');
+    const incNet = pick('income', 'net');
+    const incOther = pick('income', 'other');
+    const sav401k = pick('savings', '401k');
+    const expRent = pick('expenses', 'rent');
+
+    // Always Compute Tax (Gross - Net - 401k)
+    // Do not copy from previous or preserve manual tax if it conflicts with formula
+    const computedTax = incGross.val - incNet.val - sav401k.val;
 
     const newRecord = {
         id: monthId,
         month: monthId,
-        _isAutoFilled: true,
+        _isAutoFilled: currentRecord ? (currentRecord._isAutoFilled ?? true) : true, // Preserve status if current exists
         income: {
-            gross: lastValues.income.gross,
-            gross_expr: lastValues.income.gross_expr,
-            net: lastValues.income.net,
-            net_expr: lastValues.income.net_expr,
-            other: lastValues.income.other,
-            other_expr: lastValues.income.other_expr,
-            tax: lastValues.income.tax,
-            tax_expr: lastValues.income.tax_expr
+            gross: incGross.val, gross_expr: incGross.expr,
+            net: incNet.val, net_expr: incNet.expr,
+            other: incOther.val, other_expr: incOther.expr,
+            tax: computedTax, tax_expr: null // Tax is always derived, no partial expression
         },
         savings: {
-            '401k': lastValues.savings['401k'],
-            '401k_expr': lastValues.savings['401k_expr'],
+            '401k': sav401k.val, '401k_expr': sav401k.expr,
             stock: 0
         },
         expenses: {
-            rent: lastValues.expenses.rent,
-            rent_expr: lastValues.expenses.rent_expr,
+            rent: expRent.val, rent_expr: expRent.expr,
             car: 0, discover: 0, amex: 0, usbank: 0, chase: 0, other: 0, others: 0
         }
     };
@@ -117,7 +113,7 @@ export const fillDataGaps = (existingRecords = [], transactions = []) => {
     existingRecords.forEach(r => recordMap.set(r.id, r));
 
     const filledRecords = [];
-    let prevRecord = null; // Track literally the previous record object processed/created
+    let prevRecord = null; // Track previous record for carry-over
 
     let currentY = startYear;
     let currentM = startMonth;
@@ -130,16 +126,13 @@ export const fillDataGaps = (existingRecords = [], transactions = []) => {
         let record = recordMap.get(id);
 
         if (record && !record._isAutoFilled) {
-            // User Data: Use it as truth, and it becomes the PrevRecord for next iteration
+            // User Data: Preserve and use as context for next iteration
             filledRecords.push(record);
             prevRecord = record;
         } else {
-            // Gap or Auto-Filled: Regenerate
-            const newRecord = generateMonthRecord(id, prevRecord, transactions);
-
-            // If we had a stale record, we might want to preserve non-overridden fields?
-            // But logic says: "Override Hierarchy". System Calc is truth unless User explicitly overrode.
-            // Since we established this is NOT a user record (!record || _isAutoFilled), regeneration is safe.
+            // Gap or Auto-Filled: Regenerate from System Logic
+            // Pass 'record' as currentRecord to preserve any sticky values/overrides that exist on it
+            const newRecord = generateMonthRecord(id, prevRecord, transactions, record);
             filledRecords.push(newRecord);
             prevRecord = newRecord;
         }

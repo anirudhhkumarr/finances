@@ -775,3 +775,27 @@ input[type=number] {
 .balance-row.type-invest:hover {
     background: rgba(234, 179, 8, 0.5);
 }
+
+/* Sync Button Styles */
+.dc-sync-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #666; /* Muted */
+    opacity: 0;
+    transition: opacity 0.2s ease, color 0.2s ease;
+    padding: 0;
+    margin-left: 8px;
+    display: inline-flex;
+    align-items: center;
+    vertical-align: middle;
+}
+
+.month-label:hover .dc-sync-btn {
+    opacity: 0.5;
+}
+
+.dc-sync-btn:hover {
+    opacity: 1 !important;
+    color: #fff; /* Brighter on direct hover */
+}

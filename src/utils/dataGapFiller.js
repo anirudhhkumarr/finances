@@ -84,19 +84,9 @@ export const generateMonthRecord = (monthId, prevRecord = null, transactions = [
             if (!overrides[fieldKey]) overrides[fieldKey] = 0;
             if (!formulas[fieldKey]) formulas[fieldKey] = [];
 
-            // SIGN LOGIC: 
-            // We assume "Display Convention":
-            // - Expenses entered as POSITIVE (e.g. 50) should add to the Expense Total.
-            // - Refunds entered as NEGATIVE (e.g. -20) should reduce the Expense Total.
-            // - Income entered as POSITIVE.
-            // Therefore, we just add the amount directly. 
-            // Math.abs() was overriding the negative inputs.
-            // My previous attempt (-amt) inverted the positive inputs.
-
-            const valToAdd = amt;
-
-            overrides[fieldKey] += valToAdd;
-            formulas[fieldKey].push(valToAdd);
+            // Add amount directly (Transactions are source of truth for sign)
+            overrides[fieldKey] += amt;
+            formulas[fieldKey].push(amt);
         });
 
         Object.keys(overrides).forEach(key => {
@@ -104,9 +94,6 @@ export const generateMonthRecord = (monthId, prevRecord = null, transactions = [
             if (newRecord[group]) {
                 newRecord[group][field] = overrides[key];
                 if (formulas[key].length > 0) {
-                    // Join with ' + ' but handle negatives cleanly?
-                    // JS: "100 + -50" evaluates correctly to 50.
-                    // User might prefer "100 - 50" but "100 + -50" is valid and transparent.
                     newRecord[group][field + '_expr'] = formulas[key].join(' + ');
                 }
             }

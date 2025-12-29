@@ -138,8 +138,7 @@ export const FinanceProvider = ({ children }) => {
 
             // Value Logic
             if (value === '' || value === null) {
-                // User CLEARED the value -> Remove User Override -> Revert to System Calculation
-                // Find previous month record for context
+                // Clear: Revert to System Calculation (Copy + Transactions)
                 const prevMonthDate = new Date(recordId + '-15'); // Middle of month safe
                 prevMonthDate.setMonth(prevMonthDate.getMonth() - 1);
                 const prevId = prevMonthDate.toISOString().slice(0, 7);
@@ -156,17 +155,14 @@ export const FinanceProvider = ({ children }) => {
                 record[group][field] = systemValue;
                 if (systemExpr) record[group][field + '_expr'] = systemExpr;
                 else delete record[group][field + '_expr'];
-
-                // Note: We don't necessarily reset _isAutoFilled to true because other fields might still be manual.
-                // But we have strictly adhered to "Clearing removes override".
             } else {
-                // Explicit Value (incl 0) -> Manual Override
+                // Explicit Value: Set Manual Override
                 record[group][field] = parseFloat(value) || 0;
 
                 // Mark as Manual so it sticks
                 record._isAutoFilled = false;
 
-                // Handle Formula Storage
+                // Handle Formula
                 if (formula) {
                     record[group][field + '_expr'] = formula;
                 } else {
@@ -207,27 +203,17 @@ export const FinanceProvider = ({ children }) => {
         const prevId = prevMonthDate.toISOString().slice(0, 7);
         const prevRecord = nextRecords.find(r => r.id === prevId);
 
-        // Regenerate the "System Ideal" record
+        // Regenerate the record using system logic
         const newRecord = generateMonthRecord(monthId, prevRecord, data.transactions || []);
-
-        // Ensure manual flag is cleared because "Sync/Refresh" means "Restore to System"
-        // generateMonthRecord already sets _isAutoFilled: true
 
         if (recordIdx === -1) {
             nextRecords.push(newRecord);
         } else {
-            // Preserve ID stability if needed, but safe to replace
             nextRecords[recordIdx] = newRecord;
         }
 
-        // Trigger context update
-        // Derived Tax is safe because generateMonthRecord constructs a valid object
-        // But we should verify if we need to run "update derived tax" logic?
-        // generateMonthRecord copies values. Tax calculation is derived on update.
-        // It copies 'tax' from previous. 
-        // If we want accurate tax based on the NEW values, we should re-run derived Tax.
-
-        // Let's re-run derived Tax for consistency
+        // Update Derived Fields (Tax)
+        // Note: generateMonthRecord copies raw values; Tax is derived
         const record = nextRecords[recordIdx !== -1 ? recordIdx : nextRecords.length - 1];
         if (record.income && record.savings) {
             const gross = parseFloat(record.income.gross) || 0;

@@ -23,6 +23,10 @@ const IconRefresh = () => (
     </svg>
 );
 
+
+
+
+
 const DataCell = React.memo(({
     recordId, group, field, value, formula,
     isReadOnly, onUpdate, isSummary, colIndex
@@ -337,9 +341,7 @@ const DataEntry = () => {
                                                     title="Reset & Sync from Transactions"
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        if (confirm('Reset this month? Manual edits will be lost.')) {
-                                                            syncRecord(r.id);
-                                                        }
+                                                        syncRecord(r.id);
                                                     }}
                                                 >
                                                     <IconRefresh />

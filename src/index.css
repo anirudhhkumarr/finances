@@ -1,0 +1,504 @@
+:root {
+  /* -- Colors (Elegant Midnight) -- */
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+
+  --accent-color: #38bdf8;
+  --accent-glow: rgba(56, 189, 248, 0.15);
+
+  --success-color: #4ade80;
+  --danger-color: #f87171;
+  --warning-color: #fbbf24;
+
+  --card-bg: #1e293b;
+  --card-border: #334155;
+  --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+
+  /* -- Typography -- */
+  --font-heading: 'Outfit', -apple-system, sans-serif;
+  --font-body: 'Outfit', -apple-system, sans-serif;
+  --font-mono: 'SF Mono', 'Menlo', monospace;
+
+  /* -- Spacing -- */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* -- Minimal Left Sidebar -- */
+.app-sidebar-minimal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 72px;
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--card-border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 0;
+  z-index: 1000;
+}
+
+.sidebar-logo {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 20px;
+  color: var(--accent-color);
+  margin-bottom: 40px;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  align-items: center;
+}
+
+.nav-btn-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 20px;
+  transition: all 0.2s ease;
+  color: var(--text-secondary);
+}
+
+.nav-btn-icon:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+}
+
+.nav-btn-icon.active {
+  background: var(--accent-color);
+  color: #0f172a;
+  box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
+}
+
+.main-content {
+  margin-left: 72px;
+  padding: 0;
+  /* Full bleed for data entry */
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* -- Balances View -- */
+/* -- Balances View -- */
+#balances-year-stack {
+  padding: 40px;
+  max-width: 900px;
+  margin: 0 auto;
+  font-family: var(--font-body);
+}
+
+/* Month Section */
+.month-section {
+  margin-bottom: 40px;
+  background: transparent;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--card-border);
+}
+
+.sticky-month-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--card-border);
+  padding: 16px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-heading);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.month-stats-brief {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--accent-color);
+  font-weight: 500;
+  background: transparent;
+  border: none;
+  text-align: right;
+  outline: none;
+}
+
+.input-override {
+  color: var(--accent-color);
+  border-bottom: 1px dashed var(--accent-color);
+  width: 120px;
+}
+
+/* Grid Layout */
+.month-grid {
+  background: var(--bg-secondary);
+}
+
+.balance-row {
+  display: grid;
+  grid-template-columns: 50px 60px 140px 140px 1fr;
+  gap: 16px;
+  align-items: center;
+  padding: 12px 24px;
+  border-bottom: 1px solid var(--card-border);
+  font-size: 14px;
+  transition: background 0.15s ease;
+}
+
+.balance-row:last-child {
+  border-bottom: none;
+}
+
+.balance-row:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* Header Row */
+.balance-row.header {
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  font-size: 11px;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--card-border);
+}
+
+/* Columns */
+.bal-day {
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-weight: 500;
+}
+
+.bal-weekday {
+  color: var(--text-muted);
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+/* Input Fields */
+.bal-amt,
+.bal-cat {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  outline: none;
+  transition: all 0.2s;
+  width: 100%;
+}
+
+.bal-amt {
+  text-align: right;
+  font-weight: 500;
+}
+
+.bal-amt:focus,
+.bal-cat:focus {
+  background: rgba(0, 0, 0, 0.2);
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px var(--accent-glow);
+}
+
+.bal-amt:hover,
+.bal-cat:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.bal-cat {
+  font-family: var(--font-body);
+}
+
+/* Balance Column */
+.bal-balance {
+  text-align: right;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.bal-balance.positive {
+  color: var(--text-primary);
+}
+
+.bal-balance.negative {
+  color: var(--danger-color);
+}
+
+/* Recurring / Auto-populated styling */
+.balance-row.recurring .bal-cat {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.balance-row.recurring:hover .bal-cat {
+  color: var(--text-primary);
+  font-style: normal;
+}
+
+/* --- DATA ENTRY TABLE (Cleaned) --- */
+.data-entry-wrapper {
+  height: 100vh;
+  overflow: auto;
+  background: var(--bg-primary);
+  /* Dark Theme */
+}
+
+.dc-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: 1000px;
+  font-size: 13px;
+  font-family: var(--font-body);
+  table-layout: fixed;
+}
+
+/* Widths */
+.dc-table colgroup col.w-month {
+  width: 100px;
+}
+
+.dc-table colgroup col.w-data {
+  width: 100px;
+}
+
+/* Headers */
+.dc-thead {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--bg-primary);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.dc-header-row th {
+  background: var(--bg-primary);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  padding: 0;
+  border-bottom: 1px solid var(--card-border);
+  border-right: 1px solid var(--card-border);
+  color: var(--text-primary);
+}
+
+/* Group Headers */
+.dc-header-row.group th {
+  height: 28px;
+  text-transform: uppercase;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--card-border);
+}
+
+/* Accent Colors for Dark Theme */
+.dc-group-th.income {
+  background: rgba(74, 222, 128, 0.1);
+  color: var(--success-color);
+  border-top: 3px solid var(--success-color);
+}
+
+.dc-group-th.savings {
+  background: rgba(251, 191, 36, 0.1);
+  color: var(--warning-color);
+  border-top: 3px solid var(--warning-color);
+}
+
+.dc-group-th.expenses {
+  background: rgba(248, 113, 113, 0.1);
+  color: var(--danger-color);
+  border-top: 3px solid var(--danger-color);
+}
+
+/* Field Headers */
+.dc-header-row.field th {
+  top: 29px;
+  height: 32px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-align: right;
+  padding: 0 8px;
+  background: var(--bg-secondary);
+  border-bottom: 2px solid var(--card-border);
+  display: table-cell;
+  vertical-align: middle;
+}
+
+/* Sticky First Column */
+.sticky-corner {
+  position: sticky;
+  left: 0;
+  z-index: 30 !important;
+  background: var(--bg-primary);
+  border-right: 2px solid var(--card-border);
+}
+
+.sticky-col-month {
+  position: sticky;
+  left: 0;
+  z-index: 25;
+  background: var(--bg-primary);
+  border-right: 2px solid var(--card-border);
+  text-align: left;
+  padding: 0 0 0 12px;
+  color: var(--text-primary);
+  height: 36px;
+  /* Match dc-cell */
+  vertical-align: middle;
+  box-sizing: border-box;
+}
+
+.dc-header-row.field .sticky-col-month {
+  text-align: center;
+  padding: 0;
+  background: var(--bg-secondary);
+  height: 32px;
+  /* Match header height */
+  line-height: 32px;
+}
+
+/* Year Row */
+.dc-year-row {
+  background: var(--card-bg);
+  /* Darker row */
+  cursor: pointer;
+}
+
+.dc-year-row:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.dc-year-row td {
+  /* Remove global padding so dc-cell works */
+  font-weight: 800;
+  /* Extra bold */
+  font-size: 14px;
+  /* Larger */
+  color: var(--text-primary);
+  border-bottom: 2px solid var(--card-border);
+  /* Stronger border */
+  text-align: right;
+  background: rgba(255, 255, 255, 0.05);
+  /* Highlight whole row */
+}
+
+.dc-year-row .year-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  background: var(--card-bg);
+  border-right: 2px solid var(--card-border);
+  padding: 0 0 0 12px;
+  /* Internal padding */
+  height: 36px;
+  /* Explicit height */
+}
+
+/* Data Rows */
+.dc-data-row:hover td {
+  background-color: rgba(255, 255, 255, 0.03);
+  /* Subtle highlight */
+}
+
+.dc-cell {
+  padding: 0;
+  height: 36px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  border-right: 1px solid var(--card-border);
+  position: relative;
+  background: transparent;
+}
+
+.dc-cell-content {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 8px;
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+  box-sizing: border-box;
+  /* Fix: Include padding in height */
+}
+
+/* Summary Cells (Bold & Big) */
+.dc-cell.summary .dc-cell-content {
+  font-weight: 800;
+  font-size: 14px;
+  color: var(--accent-color);
+  /* Optional: Make totals pop with accent color? Or keep white. Let's stick to text-primary but bold. */
+  color: var(--text-primary);
+}
+
+/* Inputs */
+.dc-cell.editing input {
+  width: 100%;
+  height: 100%;
+  border: 2px solid var(--accent-color);
+  padding: 8px;
+  text-align: right;
+  font-family: inherit;
+  font-size: inherit;
+  background: var(--bg-primary);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+  color: var(--text-primary);
+  outline: none;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+.dc-cell.read-only .dc-cell-content {
+  color: var(--text-muted);
+  background: rgba(0, 0, 0, 0.2);
+  /* Darken slightly */
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.cursor-pointer:hover {
+  opacity: 0.8;
+}

@@ -15,6 +15,14 @@ const IconChevronRight = () => (
     </svg>
 );
 
+const IconRefresh = () => (
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M23 4v6h-6"></path>
+        <path d="M1 20v-6h6"></path>
+        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+    </svg>
+);
+
 const DataCell = React.memo(({
     recordId, group, field, value, formula,
     isReadOnly, onUpdate, isSummary, colIndex
@@ -39,14 +47,20 @@ const DataCell = React.memo(({
             return;
         }
 
-        let expr = input;
-        if (input.startsWith('=')) expr = input.substring(1);
+        // Implicit Formula Evaluation
+        // We do NOT check for '=' prefix anymore.
+        // We pass the raw input to evaluateExpression which handles sanitization.
+        const result = evaluateExpression(input);
 
-        const result = evaluateExpression(expr);
-
-        // Validation: Only update if valid math
+        // Validation: Only update if valid finite number
         if (!isNaN(result) && isFinite(result)) {
+            // Determine if it was a formula or just a number
+            // If input contains math operators, we store it as a formula.
+            // also allow '=' for backward compatibility if user types it
             const isFormula = /[+\-*/]/.test(input) || input.startsWith('=');
+
+            // If the user entered a simple number "100", isFormula is false -> formula cleared.
+            // If "100+200", isFormula is true -> formula stored "100+200".
             onUpdate(recordId, group, field, result, isFormula ? input : null);
         } else {
             console.warn(`Invalid input: "${input}". Reverting.`);
@@ -92,7 +106,7 @@ const DataCell = React.memo(({
 });
 
 const DataEntry = () => {
-    const { appData, updateRecordValue, CategoryMap } = useFinance();
+    const { appData, updateRecordValue, CategoryMap, syncRecord } = useFinance();
 
     // Default Expanded Years
     const [expandedYears, setExpandedYears] = useState(() => {
@@ -197,33 +211,10 @@ const DataEntry = () => {
         <div className="data-entry-wrapper">
             <table className="dc-table">
                 <colgroup>
-                    <col style={{ width: '100px', minWidth: '100px' }} /> {/* Month (Fixed) */}
-
-                    {/* Income (4 cols: Gross, Tax, Net, Other) */}
-                    {groupState.income ? (
-                        <><col /><col /><col /><col /></>
-                    ) : (
-                        <col className="collapsed-col" />
-                    )}
-
-                    {/* Savings (2 cols: 401k, Stock) */}
-                    {groupState.savings ? (
-                        <><col /><col /></>
-                    ) : (
-                        <col className="collapsed-col" />
-                    )}
-
-                    {/* Expenses (7 cols) */}
-                    {groupState.expenses ? (
-                        <>
-                            <col /><col />
-                            <col /><col />
-                            <col /><col />
-                            <col />
-                        </>
-                    ) : (
-                        <col className="collapsed-col" />
-                    )}
+                    <col style={{ width: '100px', minWidth: '100px' }} />
+                    {groupState.income ? <><col /><col /><col /><col /></> : <col className="collapsed-col" />}
+                    {groupState.savings ? <><col /><col /></> : <col className="collapsed-col" />}
+                    {groupState.expenses ? <><col /><col /><col /><col /><col /><col /><col /></> : <col className="collapsed-col" />}
                 </colgroup>
                 <thead className="dc-thead">
                     {/* Group Header */}
@@ -339,7 +330,21 @@ const DataEntry = () => {
 
                                     return (
                                         <tr key={r.id} className="dc-data-row">
-                                            <td className="sticky-col-month month-label">{label}</td>
+                                            <td className="sticky-col-month month-label group">
+                                                {label}
+                                                <button
+                                                    className="dc-sync-btn"
+                                                    title="Reset & Sync from Transactions"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        if (confirm('Reset this month? Manual edits will be lost.')) {
+                                                            syncRecord(r.id);
+                                                        }
+                                                    }}
+                                                >
+                                                    <IconRefresh />
+                                                </button>
+                                            </td>
 
                                             {/* Income Row Data */}
                                             {groupState.income ? (

@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { migrateLegacyData } from '../utils/migration';
+import { fillDataGaps, generateMonthRecord } from '../utils/dataGapFiller';
+import { CategoryMap } from '../utils/categoryConfig';
 
 const FinanceContext = createContext();
 
@@ -16,7 +18,14 @@ export const FinanceProvider = ({ children }) => {
     const [appData, setAppData] = useState(() => {
         const stored = localStorage.getItem(DATA_KEY);
         // Ensure balanceOverrides exists
-        const data = stored ? JSON.parse(stored) : defaultData;
+        let data = stored ? JSON.parse(stored) : defaultData;
+
+        // Auto-Fill Gaps on Load (User Requested)
+        // Ensures full timeline from Jan 2020 -> Present exists immediately
+        if (data.records) {
+            data.records = fillDataGaps(data.records, data.transactions || []);
+        }
+
         if (!data.balanceOverrides) data.balanceOverrides = {};
         return data;
     });
@@ -30,19 +39,34 @@ export const FinanceProvider = ({ children }) => {
     useEffect(() => {
         window.migrateData = () => {
             const { records, transactions } = migrateLegacyData();
+            // Fill gaps starting from Jan 2020
+            const filledRecords = fillDataGaps(records, transactions);
+
             setAppData(prev => ({
                 ...prev,
-                records: records,
+                records: filledRecords,
                 transactions: transactions
             }));
-            console.log("Migration Complete: ", records.length, "records", transactions.length, "transactions");
+            console.log("Migration Complete: ", filledRecords.length, "records (inc. filled)", transactions.length, "transactions");
+        };
+
+        // Expose manual clear triggers
+        window.clearData = () => {
+            console.log("Clearing Data...");
+            localStorage.removeItem('financeAppData');
+
+            // Even on clear, we want the structure from 2020
+            const filledRecords = fillDataGaps([], []);
+
+            setAppData({ ...defaultData, records: filledRecords, transactions: [], balanceOverrides: {} });
+            console.log("Data Cleared & Re-Initialized from 2020.");
         };
 
         // Auto-run for easy re-import (User requested)
         // setTimeout(() => window.migrateData(), 1000); 
     }, []);
 
-    const saveTransaction = (dateStr, id, field, val) => {
+    const saveTransaction = (dateStr, id, field, val, overrides = {}) => {
         let value = val;
         if (field === 'amount') value = parseFloat(val);
 
@@ -57,7 +81,7 @@ export const FinanceProvider = ({ children }) => {
                 const newTxn = {
                     id: Date.now().toString(),
                     date: dateStr,
-                    category: '',
+                    category: overrides.category || '',
                     amount: 0
                 };
                 newTxn[field] = value;
@@ -85,19 +109,8 @@ export const FinanceProvider = ({ children }) => {
         });
     };
 
-    // Exact mapping from Balances Category -> Spreadsheet Column
-    const CategoryMap = {
-        'Salary': { group: 'income', field: 'net' },
-        'Rent': { group: 'expenses', field: 'rent' },
-        'Car': { group: 'expenses', field: 'car' },
-        'Chase': { group: 'expenses', field: 'chase' },
-        'Amex': { group: 'expenses', field: 'amex' },
-        'Discover': { group: 'expenses', field: 'discover' },
-        'US Bank': { group: 'expenses', field: 'usbank' },
-        'PG&E': { group: 'expenses', field: 'rent' },
-        'Invest': { group: 'savings', field: 'stock' },
-        'Xfinity': { group: 'expenses', field: 'other' }
-    };
+    // CategoryMap imported from utils/categoryConfig
+
 
     const updateRecordValue = (recordId, group, field, value, formula) => {
         setAppData(prev => {
@@ -121,33 +134,62 @@ export const FinanceProvider = ({ children }) => {
 
             if (!record[group]) record[group] = {};
 
-            record[group][field] = parseFloat(value) || 0;
+            if (!record[group]) record[group] = {};
 
-            // Handle Formula Storage
-            if (formula) {
-                record[group][field + '_expr'] = formula;
+            // Value Logic
+            if (value === '' || value === null) {
+                // User CLEARED the value -> Remove User Override -> Revert to System Calculation
+                // Find previous month record for context
+                const prevMonthDate = new Date(recordId + '-15'); // Middle of month safe
+                prevMonthDate.setMonth(prevMonthDate.getMonth() - 1);
+                const prevId = prevMonthDate.toISOString().slice(0, 7);
+                const prevRecord = nextRecords.find(r => r.id === prevId);
+
+                // Generate system prediction
+                // Helper imported from dataGapFiller
+                const systemRecord = generateMonthRecord(recordId, prevRecord, prev.transactions);
+
+                // Restore only this field
+                const systemValue = systemRecord[group]?.[field] || 0;
+                const systemExpr = systemRecord[group]?.[field + '_expr'];
+
+                record[group][field] = systemValue;
+                if (systemExpr) record[group][field + '_expr'] = systemExpr;
+                else delete record[group][field + '_expr'];
+
+                // Note: We don't necessarily reset _isAutoFilled to true because other fields might still be manual.
+                // But we have strictly adhered to "Clearing removes override".
             } else {
-                delete record[group][field + '_expr'];
+                // Explicit Value (incl 0) -> Manual Override
+                record[group][field] = parseFloat(value) || 0;
+
+                // Mark as Manual so it sticks
+                record._isAutoFilled = false;
+
+                // Handle Formula Storage
+                if (formula) {
+                    record[group][field + '_expr'] = formula;
+                } else {
+                    delete record[group][field + '_expr'];
+                }
             }
 
-            // Recalc Derived derived fields
-            // User Request: "tax is caclulated from groos and net salary and other income"
-            // Assuming: Tax = Gross - Net - 401k (Basic equation)
-            // If "Other" implies Other Income is part of the equation, we'd need clarification.
-            // For now, let's derive Tax, so users can enter Gross & Net.
+            // Recalc Derived Tax
+            // Tax = (Gross + Other) - 401k - Net
             if (group === 'income' || group === 'savings') {
-                const gross = record.income?.gross || 0;
-                const net = record.income?.net || 0;
-                // const other = record.income?.other || 0; // Usage unknown for tax
-                const k401 = record.savings?.['401k'] || 0;
+                // Ensure we have copies of groups we access/mutate
+                record.income = { ...(record.income || {}) };
+                record.savings = { ...(record.savings || {}) };
 
-                // Derived Tax: Gross - 401k - Net = Tax
-                const derivedTax = gross - k401 - net;
+                const gross = parseFloat(record.income.gross) || 0;
+                const net = parseFloat(record.income.net) || 0;
+                const other = parseFloat(record.income.other) || 0;
+                const k401 = parseFloat(record.savings['401k']) || 0;
 
-                // Only update if positive? Or allow negative (refunds)? Allow all.
-                if (record.savings) {
-                    record.savings.tax = derivedTax;
-                }
+                // Derived Tax
+                const derivedTax = (gross + other) - k401 - net;
+
+                record.income.tax = derivedTax;
             }
 
             nextRecords[recordIdx] = record;
@@ -156,76 +198,45 @@ export const FinanceProvider = ({ children }) => {
     };
 
     const syncMonth = (data, monthId) => {
-        const monthTxns = data.transactions.filter(t => t.date.startsWith(monthId));
         let nextRecords = [...(data.records || [])];
-        let recordIdx = nextRecords.findIndex(r => r.id === monthId);
+        const recordIdx = nextRecords.findIndex(r => r.id === monthId);
 
-        let record;
+        // Find Previous Record for "Copy" Context
+        const prevMonthDate = new Date(monthId + '-15');
+        prevMonthDate.setMonth(prevMonthDate.getMonth() - 1);
+        const prevId = prevMonthDate.toISOString().slice(0, 7);
+        const prevRecord = nextRecords.find(r => r.id === prevId);
+
+        // Regenerate the "System Ideal" record
+        const newRecord = generateMonthRecord(monthId, prevRecord, data.transactions || []);
+
+        // Ensure manual flag is cleared because "Sync/Refresh" means "Restore to System"
+        // generateMonthRecord already sets _isAutoFilled: true
+
         if (recordIdx === -1) {
-            record = {
-                id: monthId,
-                income: { gross: 0, net: 0, other: 0 },
-                expenses: { rent: 0, car: 0, chase: 0, amex: 0, discover: 0, usbank: 0, other: 0 },
-                savings: { tax: 0, '401k': 0, stock: 0 }
-            };
-            nextRecords.push(record);
-            recordIdx = nextRecords.length - 1;
+            nextRecords.push(newRecord);
         } else {
-            record = { ...nextRecords[recordIdx] };
-            // Deep copy nested objects
-            record.income = { ...record.income };
-            record.expenses = { ...record.expenses };
-            record.savings = { ...record.savings };
+            // Preserve ID stability if needed, but safe to replace
+            nextRecords[recordIdx] = newRecord;
         }
 
-        // 1. Reset mapped fields to 0 (we rebuild them from transactions)
-        Object.values(CategoryMap).forEach(target => {
-            if (!record[target.group]) record[target.group] = {};
-            record[target.group][target.field] = 0;
-        });
-        if (record.expenses) record.expenses.other = 0;
+        // Trigger context update
+        // Derived Tax is safe because generateMonthRecord constructs a valid object
+        // But we should verify if we need to run "update derived tax" logic?
+        // generateMonthRecord copies values. Tax calculation is derived on update.
+        // It copies 'tax' from previous. 
+        // If we want accurate tax based on the NEW values, we should re-run derived Tax.
 
-        // 2. Accumulate
-        monthTxns.forEach(txn => {
-            const amt = txn.amount || 0;
-            const cat = (txn.category || '').trim();
-
-            // Find config by checking if category *contains* key (Legacy compliant-ish) or exact match
-            let config = CategoryMap[cat];
-
-            // Fallback: Check for substring match if needed? 
-            if (!config) {
-                const key = Object.keys(CategoryMap).find(k => cat.toLowerCase().includes(k.toLowerCase()));
-                if (key) config = CategoryMap[key];
-            }
-
-            let targetGroup = 'expenses';
-            let targetField = 'other';
-
-            if (config) {
-                targetGroup = config.group;
-                targetField = config.field;
-            }
-
-            if (!record[targetGroup]) record[targetGroup] = {};
-
-            // Add Magnitude? (Spreadsheet expenses usually positive)
-            record[targetGroup][targetField] = (record[targetGroup][targetField] || 0) + Math.abs(amt);
-
-            // Clear formula for synced fields to avoid confusion
-            delete record[targetGroup][targetField + '_expr'];
-        });
-
-        // 3. Derived Updates
-        const gross = record.income.gross || 0;
-        const tax = record.savings.tax || 0;
-        const k401 = record.savings['401k'] || 0;
-
-        if (gross > 0) {
-            record.income.net = gross - tax - k401;
+        // Let's re-run derived Tax for consistency
+        const record = nextRecords[recordIdx !== -1 ? recordIdx : nextRecords.length - 1];
+        if (record.income && record.savings) {
+            const gross = parseFloat(record.income.gross) || 0;
+            const net = parseFloat(record.income.net) || 0;
+            const other = parseFloat(record.income.other) || 0;
+            const k401 = parseFloat(record.savings['401k']) || 0;
+            record.income.tax = (gross + other) - k401 - net;
         }
 
-        nextRecords[recordIdx] = record;
         return { ...data, records: nextRecords };
     };
 
@@ -247,10 +258,18 @@ export const FinanceProvider = ({ children }) => {
     };
 
     return (
-        <FinanceContext.Provider value={{ appData, setAppData, saveTransaction, updateRecordValue, CategoryMap, setBalanceOverride }}>
+        <FinanceContext.Provider value={{
+            appData,
+            saveTransaction,
+            updateRecordValue,
+            CategoryMap,
+            setBalanceOverride,
+            syncRecord: (monthId) => setAppData(prev => syncMonth(prev, monthId)) // Wrapper to trigger state update
+        }}>
             {children}
         </FinanceContext.Provider>
     );
 };
 
 export const useFinance = () => useContext(FinanceContext);
+

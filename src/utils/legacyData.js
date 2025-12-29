@@ -1703,54 +1703,6 @@ export const legacyData = {
         "other": -295,
         "others": 2234
       }
-    },
-    {
-      "id": "2025-12",
-      "month": "2025-12",
-      "income": {
-        "gross": 26775,
-        "net": 19574,
-        "other": -97
-      },
-      "savings": {
-        "tax": 6933,
-        "401k": 268,
-        "stock": 10500
-      },
-      "expenses": {
-        "rent": 4448,
-        "car": 0,
-        "discover": 119,
-        "amex": 330,
-        "usbank": 1864,
-        "chase": 531,
-        "other": -139,
-        "others": 2705
-      }
-    },
-    {
-      "id": "2026-01",
-      "month": "2026-01",
-      "income": {
-        "gross": 0,
-        "net": 0,
-        "other": 0
-      },
-      "savings": {
-        "tax": 0,
-        "401k": 0,
-        "stock": 5000
-      },
-      "expenses": {
-        "rent": 4400,
-        "car": 0,
-        "discover": 201,
-        "amex": 22,
-        "usbank": 1292,
-        "chase": 1221,
-        "other": 35,
-        "others": 2771
-      }
     }
   ],
   "planning": {

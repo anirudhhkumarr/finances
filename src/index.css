@@ -116,12 +116,31 @@ body {
 }
 
 /* Month Section */
+/* Month Section */
 .month-section {
-  margin-bottom: 40px;
+  margin-bottom: 0;
   background: transparent;
-  border-radius: var(--radius-md);
+  /* border-radius: var(--radius-md); Combined radius if stacked? Maybe keep for top/bottom only? */
+  /* To make them look like one continuous sheet, remove radius and border between them.
+     But simpler first: just remove margin. */
+  border-radius: 0;
   overflow: hidden;
   border: 1px solid var(--card-border);
+  border-bottom: none;
+  /* Merge borders */
+}
+
+.month-section:last-child {
+  border-bottom: 1px solid var(--card-border);
+  border-bottom-left-radius: var(--radius-md);
+  border-bottom-right-radius: var(--radius-md);
+  margin-bottom: 40px;
+  /* Current padding */
+}
+
+.month-section:first-child {
+  border-top-left-radius: var(--radius-md);
+  border-top-right-radius: var(--radius-md);
 }
 
 .sticky-month-header {
@@ -501,4 +520,258 @@ body {
 
 .cursor-pointer:hover {
   opacity: 0.8;
+}
+
+/* --- Editable Balance Column --- */
+.bal-balance-wrapper {
+  text-align: right;
+  width: 100%;
+}
+
+.bal-balance-input {
+  background: transparent;
+  border: 1px solid transparent;
+  width: 100%;
+  text-align: right;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-size: 14px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  outline: none;
+  transition: all 0.2s;
+  cursor: text;
+}
+
+/* Inherit Colors based on wrapper class */
+.bal-balance-wrapper.positive .bal-balance-input {
+  color: var(--text-primary);
+}
+
+.bal-balance-wrapper.negative .bal-balance-input {
+  color: var(--danger-color);
+}
+
+.bal-balance-input:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.bal-balance-input:focus {
+  background: rgba(0, 0, 0, 0.2);
+  border-color: var(--accent-color);
+  /* Ensure readability on focus */
+  color: var(--text-primary);
+}
+
+/* Visual Indicator for Overrides */
+.bal-balance-input.override {
+  color: var(--accent-color) !important;
+  border-bottom: 1px dashed var(--accent-color);
+  background: rgba(56, 189, 248, 0.05);
+}
+
+/* Remove Number Input Spinners */
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+/* Fix Input Sizing and Alignment */
+.bal-amt,
+.bal-cat,
+.bal-balance-input,
+.input-override {
+  box-sizing: border-box;
+  margin: 0;
+}
+
+/* Highlight Date if Category exists */
+.bal-day.highlight {
+  color: var(--accent-color);
+  font-weight: 700;
+  text-shadow: 0 0 8px var(--accent-glow);
+}
+
+/* Global Sticky Header */
+.balances-global-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(8px);
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--card-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0;
+  /* Visual separator from first month */
+}
+
+.global-balance-label {
+  font-family: var(--font-heading);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.global-balance-value {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--accent-color);
+  text-shadow: 0 0 10px var(--accent-glow);
+}
+
+/* Adjust sticky month header to stick below global header? 
+   No, usually stack. Sticky elements stack by default if top is properly managed.
+   If global header is 70px h, month header needs top: 70px.
+   BUT, we might want month headers to scroll under global header?
+   Reference: "month blocks should be contiguous".
+   Let's try standard sticky. 
+*/
+.sticky-month-header {
+  top: 61px;
+  /* Approx height of global header */
+  z-index: 90;
+  /* Slightly less than global header */
+  box-shadow: none;
+  border-bottom: 1px solid var(--card-border);
+  background: rgba(30, 41, 59, 0.95);
+  /* matching bg-secondary essentially */
+}
+
+/* Sticky Layout Stacking */
+/* 1. Global Balance Header: Top 0, H ~61px */
+/* 2. Global Column Header: Top 61px, H ~48px */
+/* 3. Month Header: Top 109px */
+
+.balance-row.header.sticky-columns {
+  position: sticky;
+  top: 61px;
+  /* Starts after global header */
+  z-index: 95;
+  background: var(--bg-primary);
+  /* Ensure opacity */
+  border-bottom: 2px solid var(--card-border);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* Adjust Month Header to slide under or stack below? */
+.sticky-month-header {
+  position: relative;
+  /* Changed from sticky to relative/static */
+  top: auto;
+  z-index: 10;
+  /* background: rgba(30, 41, 59, 0.95); Keep bg for visual separation */
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--card-border);
+  box-shadow: none;
+}
+
+/* --- Row State Highlighting --- */
+/* User Set / Active Row */
+.balance-row.active {
+  background: rgba(30, 41, 59, 0.4);
+  /* Slightly distinct from bg-secondary */
+  /* border-left: 2px solid var(--accent-color); Optional accent */
+}
+
+/* User Set / Active Row Hover */
+.balance-row.active:hover {
+  background: rgba(30, 41, 59, 0.8);
+}
+
+
+/* Prepopulated / Recurring Row */
+.balance-row.recurring {
+  background: rgba(74, 222, 128, 0.03);
+  /* Very subtle green tint for recurring? Or just distinct grey */
+}
+
+.balance-row.recurring:hover {
+  background: rgba(74, 222, 128, 0.08);
+}
+
+/* Override Input Text Color */
+/* Ensure it overrides the positive/negative color inheritance */
+.bal-balance-wrapper .bal-balance-input.override {
+  color: var(--accent-color) !important;
+  font-weight: 700;
+  background: rgba(56, 189, 248, 0.1);
+  /* Stronger background for visibility */
+  border-bottom: 2px solid var(--accent-color);
+  /* Stronger indicator */
+  border-radius: 4px;
+}
+
+/* --- Details: Color Coding Income/Expense/Invest --- */
+
+/* Green for Income (Vibrant) */
+.balance-row.type-income.active {
+    background: rgba(16, 185, 129, 0.4); /* Much stronger green */
+    border-left: 3px solid #10b981;
+}
+
+.balance-row.type-income.recurring {
+    background: rgba(16, 185, 129, 0.2); /* Visible tint */
+}
+
+/* Red for Expense (Vibrant) */
+.balance-row.type-expense.active {
+    background: rgba(239, 68, 68, 0.4); /* Much stronger red */
+    border-left: 3px solid #ef4444;
+}
+
+.balance-row.type-expense.recurring {
+    background: rgba(239, 68, 68, 0.2);
+}
+
+/* Yellow for Invest (Vibrant) */
+.balance-row.type-invest.active {
+    background: rgba(234, 179, 8, 0.4); /* Much stronger yellow */
+    border-left: 3px solid #eab308;
+}
+
+.balance-row.type-invest.recurring {
+    background: rgba(234, 179, 8, 0.2);
+}
+
+
+/* Text Colors for Amount */
+.balance-row.type-income .bal-amt {
+    color: #22c55e; /* Stronger Green text */
+    font-weight: 700;
+}
+
+.balance-row.type-expense .bal-amt {
+    color: #ef4444; /* Stronger Red text */
+    font-weight: 600;
+}
+
+.balance-row.type-invest .bal-amt {
+    color: #eab308; /* Stronger Yellow text */
+    font-weight: 700;
+}
+
+/* Hover effects */
+.balance-row.type-income:hover {
+    background: rgba(16, 185, 129, 0.5);
+}
+
+.balance-row.type-expense:hover {
+    background: rgba(239, 68, 68, 0.5);
+}
+
+.balance-row.type-invest:hover {
+    background: rgba(234, 179, 8, 0.5);
 }

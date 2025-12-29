@@ -33,12 +33,6 @@ const Balances = () => {
     const loadHistory = () => {
         if (isLoading) return;
 
-        // Limit: Only keep "Current" and "Previous". 
-        // Initial load sets 2 months. We stop here.
-        if (months.length >= 2) {
-            return;
-        }
-
         setIsLoading(true);
 
         // Artificial delay for UX smoothing
@@ -47,8 +41,8 @@ const Balances = () => {
                 const last = prev[prev.length - 1]; // "Last" in array is currently the oldest loaded
                 const d = new Date(last.year, last.month - 1, 1);
 
-                // Double check inside state update to be safe
-                if (d.getFullYear() < 2026) return prev;
+                // Stop at Dec 2025 (No older data needed)
+                if (d.getFullYear() < 2025 || (d.getFullYear() === 2025 && d.getMonth() < 11)) return prev;
 
                 const newMonth = { year: d.getFullYear(), month: d.getMonth() };
                 return [...prev, newMonth]; // Append "older" month to bottom
@@ -231,28 +225,31 @@ const Balances = () => {
 
 
     return (
-        <div id="balances-year-stack" ref={containerRef}>
-            {/* Global Sticky Header for Today's Balance */}
-            <div className="balances-global-header">
-                <div className="global-balance-label">Current Balance</div>
-                <div className="global-balance-value">{currentBalance.toLocaleString()}</div>
+        <div className="balances-layout">
+            {/* Left Sidebar for Current Balance */}
+            <aside className="balances-sidebar">
+                <div className="sidebar-balance-label">Current<br />Balance</div>
+                <div className="sidebar-balance-value">{currentBalance.toLocaleString()}</div>
+            </aside>
+
+            {/* Main Content */}
+            <div id="balances-year-stack" ref={containerRef}>
+                {/* Global Column Headers */}
+                <div className="balance-row header sticky-columns">
+                    <div className="bal-day">Date</div>
+                    <div className="bal-weekday">Day</div>
+                    <div className="bal-amt" style={{ textAlign: 'right' }}>Amount</div>
+                    <div className="bal-balance">Balance</div>
+                    <div className="bal-cat">Category</div>
+                </div>
+
+                {renderedData.map(month => (
+                    <MonthBlock key={month.monthId} data={month} />
+                ))}
+
+                {/* Bottom Sentinel */}
+                <div ref={bottomSentinelRef} style={{ height: '20px', background: 'transparent' }} />
             </div>
-
-            {/* Global Column Headers */}
-            <div className="balance-row header sticky-columns">
-                <div className="bal-day">Date</div>
-                <div className="bal-weekday">Day</div>
-                <div className="bal-amt" style={{ textAlign: 'right' }}>Amount</div>
-                <div className="bal-balance">Balance</div>
-                <div className="bal-cat">Category</div>
-            </div>
-
-            {renderedData.map(month => (
-                <MonthBlock key={month.monthId} data={month} />
-            ))}
-
-            {/* Bottom Sentinel */}
-            <div ref={bottomSentinelRef} style={{ height: '20px', background: 'transparent' }} />
         </div>
     );
 };

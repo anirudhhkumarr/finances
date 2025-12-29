@@ -185,7 +185,8 @@ body {
 
 .balance-row {
   display: grid;
-  grid-template-columns: 50px 60px 140px 140px 1fr;
+  grid-template-columns: 50px 60px 1fr 1fr 1fr;
+  /* Date, Day compact; Amount, Balance, Category equal */
   gap: 16px;
   align-items: center;
   padding: 12px 24px;
@@ -205,16 +206,30 @@ body {
 /* Header Row */
 .balance-row.header {
   background: var(--bg-primary);
-  color: var(--text-secondary);
-  font-size: 11px;
+  color: var(--text-primary);
+  font-size: 12px;
   text-transform: uppercase;
   font-weight: 700;
   letter-spacing: 0.5px;
-  padding: 16px 24px;
-  border-bottom: 1px solid var(--card-border);
+  padding: 12px 24px;
+  border-bottom: 2px solid var(--card-border);
 }
 
-/* Columns */
+/* Header cells - consistent font */
+.balance-row.header .bal-day,
+.balance-row.header .bal-weekday,
+.balance-row.header .bal-amt,
+.balance-row.header .bal-balance,
+.balance-row.header .bal-cat {
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--font-body);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+}
+
+/* Columns (data rows) */
 .bal-day {
   color: var(--text-secondary);
   font-family: var(--font-mono);
@@ -222,9 +237,11 @@ body {
 }
 
 .bal-weekday {
-  color: var(--text-muted);
+  color: var(--text-secondary);
+  /* More visible than text-muted */
   font-size: 12px;
   text-transform: uppercase;
+  font-weight: 500;
 }
 
 /* Input Fields */
@@ -657,11 +674,9 @@ input[type=number] {
 
 .balance-row.header.sticky-columns {
   position: sticky;
-  top: 61px;
-  /* Starts after global header */
+  top: 0;
   z-index: 95;
   background: var(--bg-primary);
-  /* Ensure opacity */
   border-bottom: 2px solid var(--card-border);
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
@@ -716,171 +731,268 @@ input[type=number] {
 
 /* --- Details: Color Coding Income/Expense/Invest --- */
 
-/* Green for Income (Vibrant) */
+/* Green for Income (Subtle) */
 .balance-row.type-income.active {
-    background: rgba(16, 185, 129, 0.4); /* Much stronger green */
-    border-left: 3px solid #10b981;
+  background: rgba(16, 185, 129, 0.15);
+  border-left: 3px solid #10b981;
 }
 
 .balance-row.type-income.recurring {
-    background: rgba(16, 185, 129, 0.2); /* Visible tint */
+  background: rgba(16, 185, 129, 0.08);
 }
 
-/* Red for Expense (Vibrant) */
+/* Red for Expense (Subtle) */
 .balance-row.type-expense.active {
-    background: rgba(239, 68, 68, 0.4); /* Much stronger red */
-    border-left: 3px solid #ef4444;
+  background: rgba(239, 68, 68, 0.15);
+  border-left: 3px solid #ef4444;
 }
 
 .balance-row.type-expense.recurring {
-    background: rgba(239, 68, 68, 0.2);
+  background: rgba(239, 68, 68, 0.08);
 }
 
-/* Yellow for Invest (Vibrant) */
+/* Yellow for Invest (Subtle) */
 .balance-row.type-invest.active {
-    background: rgba(234, 179, 8, 0.4); /* Much stronger yellow */
-    border-left: 3px solid #eab308;
+  background: rgba(234, 179, 8, 0.15);
+  border-left: 3px solid #eab308;
 }
 
 .balance-row.type-invest.recurring {
-    background: rgba(234, 179, 8, 0.2);
+  background: rgba(234, 179, 8, 0.08);
 }
-
 
 /* Text Colors for Amount */
 .balance-row.type-income .bal-amt {
-    color: #22c55e; /* Stronger Green text */
-    font-weight: 700;
+  color: #22c55e;
+  font-weight: 700;
 }
 
 .balance-row.type-expense .bal-amt {
-    color: #ef4444; /* Stronger Red text */
-    font-weight: 600;
+  color: #ef4444;
+  font-weight: 600;
 }
 
 .balance-row.type-invest .bal-amt {
-    color: #eab308; /* Stronger Yellow text */
-    font-weight: 700;
+  color: #eab308;
+  font-weight: 700;
 }
 
 /* Hover effects */
 .balance-row.type-income:hover {
-    background: rgba(16, 185, 129, 0.5);
+  background: rgba(16, 185, 129, 0.5);
 }
 
 .balance-row.type-expense:hover {
-    background: rgba(239, 68, 68, 0.5);
+  background: rgba(239, 68, 68, 0.5);
 }
 
 .balance-row.type-invest:hover {
-    background: rgba(234, 179, 8, 0.5);
+  background: rgba(234, 179, 8, 0.5);
 }
 
 /* Sync Button Styles */
 .dc-sync-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: #666; /* Muted */
-    opacity: 0;
-    transition: opacity 0.2s ease, color 0.2s ease;
-    padding: 0;
-    margin-left: 8px;
-    display: inline-flex;
-    align-items: center;
-    vertical-align: middle;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #666;
+  /* Muted */
+  opacity: 0;
+  transition: opacity 0.2s ease, color 0.2s ease;
+  padding: 0;
+  margin-left: 8px;
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
 }
 
 .month-label:hover .dc-sync-btn {
-    opacity: 0.5;
+  opacity: 0.5;
 }
 
 .dc-sync-btn:hover {
-    opacity: 1 !important;
-    color: #fff; /* Brighter on direct hover */
+  opacity: 1 !important;
+  color: #fff;
+  /* Brighter on direct hover */
 }
 
 /* Make Sync Button Always Visible (Muted) */
 .dc-sync-btn {
-    opacity: 0.3 !important; /* Always visible but faint */
-    color: #999;
+  opacity: 0.3 !important;
+  /* Always visible but faint */
+  color: #999;
 }
 
 .dc-sync-btn:hover {
-    opacity: 1 !important;
-    color: #4caf50; /* Green on hover */
-    transform: scale(1.1);
+  opacity: 1 !important;
+  color: #4caf50;
+  /* Green on hover */
+  transform: scale(1.1);
 }
 
 /* Password Dialog */
 .pwd-dialog-overlay {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.6);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 10000;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
 }
 
 .pwd-dialog-content {
-    background: #1e1e1e;
-    padding: 2rem;
-    border-radius: 8px;
-    width: 320px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    border: 1px solid #333;
+  background: #1e1e1e;
+  padding: 2rem;
+  border-radius: 8px;
+  width: 320px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  border: 1px solid #333;
 }
 
 .pwd-title {
-    margin: 0 0 0.5rem 0;
-    color: #fff;
-    font-size: 1.25rem;
+  margin: 0 0 0.5rem 0;
+  color: #fff;
+  font-size: 1.25rem;
 }
 
 .pwd-desc {
-    color: #888;
-    margin-bottom: 1.5rem;
-    font-size: 0.9rem;
-    line-height: 1.4;
+  color: #888;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+  line-height: 1.4;
 }
 
 .pwd-input {
-    width: 100%;
-    background: #2a2a2a;
-    border: 1px solid #444;
-    padding: 0.75rem;
-    color: #fff;
-    border-radius: 4px;
-    margin-bottom: 1.5rem;
-    font-size: 1rem;
-    outline: none;
+  width: 100%;
+  background: #2a2a2a;
+  border: 1px solid #444;
+  padding: 0.75rem;
+  color: #fff;
+  border-radius: 4px;
+  margin-bottom: 1.5rem;
+  font-size: 1rem;
+  outline: none;
 }
+
 .pwd-input:focus {
-    border-color: #4caf50;
+  border-color: #4caf50;
 }
 
 .pwd-actions {
-    display: flex;
-    gap: 1rem;
-    justify-content: flex-end;
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
 }
 
 .pwd-btn {
-    padding: 0.5rem 1rem;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.9rem;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
 }
+
 .pwd-btn.cancel {
-    background: transparent;
-    color: #888;
+  background: transparent;
+  color: #888;
 }
+
 .pwd-btn.confirm {
-    background: #4caf50;
-    color: white;
+  background: #4caf50;
+  color: white;
 }
+
 .pwd-btn:hover {
-    opacity: 0.9;
+  opacity: 0.9;
+}
+
+/* Balances Left Sidebar Layout */
+.balances-layout {
+  display: flex;
+  height: 100vh;
+  width: 80%;
+  max-width: 1000px;
+  min-width: 600px;
+  margin: 0 auto;
+}
+
+.balances-sidebar {
+  width: 100px;
+  min-width: 100px;
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--card-border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 10px;
+  text-align: center;
+}
+
+.sidebar-balance-label {
+  font-size: 10px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.sidebar-balance-value {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--accent-color);
+  text-shadow: 0 0 10px var(--accent-glow);
+}
+
+/* Adjust main content - fill remaining space */
+.balances-layout #balances-year-stack {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0;
+}
+
+/* Font Consistency for Balance Headers */
+.balance-row.header {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sticky-month-header {
+  font-family: var(--font-heading);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Toggle Empty Button */
+.toggle-empty-btn {
+  background: var(--bg-secondary);
+  border: 1px solid var(--card-border);
+  color: var(--text-primary);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.toggle-empty-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: var(--accent-color);
+}
+
+/* Negative Amount (Refund) - Green */
+.bal-amt.negative-refund {
+  color: #4ade80 !important;
 }

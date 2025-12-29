@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useFinance } from '../../../contexts/FinanceContext';
 
 const MonthBlock = ({ data }) => {
     const { appData, saveTransaction, setBalanceOverride } = useFinance();
-    const { year, monthIndex, monthId, startBal, transactions } = data; // isOverride removed from props as it's now granular
+    const { year, monthIndex, monthId, startBal, transactions } = data;
+    const [hideEmpty, setHideEmpty] = useState(true); // Collapse empty rows by default
 
     const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
     const monthName = new Date(year, monthIndex, 1).toLocaleString('default', { month: 'long', year: 'numeric' });
@@ -116,19 +117,33 @@ const MonthBlock = ({ data }) => {
     // Yes, displayRows[0].balance is the balance of the last day (or last processed day).
     const currentMonthBalance = displayRows.length > 0 ? displayRows[0].balance : startBal;
 
+    // Filter rows if hideEmpty is true
+    const visibleRows = hideEmpty
+        ? processedRows.filter(row => row.txn || row.autoCategory)
+        : processedRows;
+
     return (
         <div className="month-section">
             <div className="sticky-month-header seamless">
                 <span style={{ flex: 1 }}>{monthName}</span>
+                <button
+                    className="toggle-empty-btn"
+                    onClick={() => setHideEmpty(!hideEmpty)}
+                    title={hideEmpty ? "Show empty days" : "Hide empty days"}
+                >
+                    {hideEmpty ? 'Show All' : 'Compact'}
+                </button>
             </div>
             <div className="month-grid seamless">
-                {processedRows.map((row) => {
+                {visibleRows.map((row) => {
                     const key = row.txn ? row.txn.id : `${row.dateStr}-empty`;
                     const dateObj = new Date(row.dateStr + 'T12:00:00');
                     const weekday = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
 
                     const category = (row.txn?.category || row.autoCategory || '').toLowerCase();
-                    const isIncome = category === 'salary' || category === 'income';
+                    const amount = row.txn?.amount || 0;
+                    const isNegativeAmount = amount < 0;
+                    const isIncome = category === 'salary' || category === 'income' || isNegativeAmount;
                     const isInvest = category.includes('invest') || category.includes('stock') || category.includes('401k');
 
                     let typeClass = 'type-expense';
@@ -142,7 +157,7 @@ const MonthBlock = ({ data }) => {
 
                             <input
                                 type="text"
-                                className="bal-amt"
+                                className={`bal-amt ${isNegativeAmount ? 'negative-refund' : ''}`}
                                 placeholder=""
                                 defaultValue={row.txn?.amount || ''}
                                 onBlur={(e) => handleBlur(row.dateStr, row.txn?.id, 'amount', e.target.value, row.autoCategory)}

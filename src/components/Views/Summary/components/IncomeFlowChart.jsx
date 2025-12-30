@@ -1,12 +1,12 @@
-import React, { useEffect, useRef } from 'react';
-import { Chart } from 'chart.js';
-import { commonOptions } from './ChartConfig';
+import React, { useEffect, useRef, useState } from 'react';
+import * as d3 from 'd3';
+import { sankey as d3Sankey, sankeyLinkHorizontal } from 'd3-sankey';
 
-const IncomeFlowChart = ({ data }) => {
-    const chartRef = useRef(null);
-    const chartInstance = useRef(null);
+const IncomeFlowChart = ({ data, selectedYear, setSelectedYear, yearOptions }) => {
+    const svgRef = useRef(null);
+    const containerRef = useRef(null);
+    const [dimensions, setDimensions] = useState({ width: 1000, height: 450 });
 
-    // Sankey Colors
     const colorMap = {
         'Gross Income': '#268bd2',
         'Net Income': '#2aa198',
@@ -16,104 +16,191 @@ const IncomeFlowChart = ({ data }) => {
         'Stock': '#2aa198',
         'Cash': '#268bd2',
         'Expenses': '#d33682',
-        'Rent': '#d33682',      // Base Magenta
-        'Car': '#de5599',       // Lighter Magenta
-        'Cards': '#a92b61',     // Darker Magenta
-        'Other': '#e37dae',     // Soft Pinkish Magenta
-        'cards': '#a92b61',     // Match Cards
+        'Rent': '#d33682',
+        'Car': '#de5599',
+        'Cards': '#a92b61',
+        'Other': '#e37dae',
+        'cards': '#a92b61',
     };
 
+    // Responsive Logic
     useEffect(() => {
-        const ctx = chartRef.current; // Use the element directly for getChart check
+        if (!containerRef.current) return;
 
-        // 1. Destroy any existing chart instance on this canvas (GLOBAL CHECK)
-        const existingChart = Chart.getChart(ctx);
-        if (existingChart) {
-            existingChart.destroy();
-        }
+        const resizeObserver = new ResizeObserver((entries) => {
+            if (!entries || entries.length === 0) return;
+            const { width } = entries[0].contentRect;
+            setDimensions({ width, height: 450 });
+        });
 
-        // 2. Also clear our local ref just in case
-        if (chartInstance.current) {
-            chartInstance.current.destroy();
-            chartInstance.current = null;
-        }
+        resizeObserver.observe(containerRef.current);
+        return () => resizeObserver.disconnect();
+    }, []);
 
-        if (ctx && data.sankeyData) {
-            chartInstance.current = new Chart(ctx, {
-                type: 'sankey',
-                data: {
-                    datasets: [{
-                        label: 'Income Flow',
-                        data: [...data.sankeyData],
-                        colorFrom: (c) => colorMap[c.dataset.data[c.dataIndex].from] || '#839496',
-                        colorTo: (c) => colorMap[c.dataset.data[c.dataIndex].to] || '#839496',
-                        colorMode: 'gradient',
-                        nodePadding: 80,
-                        nodeWidth: 40,
-                        font: { size: 14, weight: 'bold', family: "'Outfit', sans-serif" },
-                        color: '#fdf6e3',
-                        labels: (() => {
-                            const gross = data.sankeyGross || 1;
-                            const labels = {};
-                            const nodes = new Set();
-                            data.sankeyData.forEach(d => {
-                                nodes.add(d.from);
-                                nodes.add(d.to);
-                            });
-                            nodes.forEach(n => {
-                                let val = 0;
-                                if (n === 'Gross Income') {
-                                    val = gross;
-                                } else {
-                                    val = data.sankeyData.filter(d => d.to === n).reduce((s, d) => s + d.flow, 0);
-                                }
-                                const pct = ((val / gross) * 100).toFixed(0);
-                                labels[n] = `${n} (${pct}%)`;
-                            });
-                            return labels;
-                        })()
-                    }]
-                },
-                options: {
-                    ...commonOptions,
-                    plugins: {
-                        ...commonOptions.plugins,
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: (ctx) => {
-                                    const item = ctx.raw;
-                                    const gross = data.sankeyGross || 1;
-                                    const pct = ((item.flow || 0) / gross * 100).toFixed(1);
-                                    return `${item.from} → ${item.to}: $${(item.flow || 0).toLocaleString()} (${pct}%)`;
-                                }
-                            }
-                        }
-                    },
-                    maintainAspectRatio: false,
-                    scales: {
-                        x: { display: false },
-                        y: { display: false }
-                    }
-                }
-            });
-        }
+    useEffect(() => {
+        if (!data.sankeyData || !svgRef.current) return;
 
-        return () => {
-            if (chartInstance.current) {
-                chartInstance.current.destroy();
-                chartInstance.current = null;
+        const { width, height } = dimensions;
+        const svg = d3.select(svgRef.current);
+        svg.selectAll('*').remove();
+
+        const margin = { top: 40, right: 40, bottom: 40, left: 40 };
+
+        // 1. Process Nodes and Links
+        const nodesSet = new Set();
+        data.sankeyData.forEach(d => {
+            nodesSet.add(d.from);
+            nodesSet.add(d.to);
+        });
+        const nodes = Array.from(nodesSet).map(name => ({ name }));
+        const nodeIndex = new Map(nodes.map((d, i) => [d.name, i]));
+
+        const links = data.sankeyData.map(d => ({
+            source: nodeIndex.get(d.from),
+            target: nodeIndex.get(d.to),
+            value: d.flow,
+            fromName: d.from,
+            toName: d.to
+        }));
+
+        // 2. Initialize Sankey
+        const sankey = d3Sankey()
+            .nodeWidth(30)
+            .nodePadding(40)
+            .extent([[margin.left, margin.top], [width - margin.right, height - margin.bottom]]);
+
+        let { nodes: sankeyNodes, links: sankeyLinks } = sankey({
+            nodes: nodes.map(d => ({ ...d })),
+            links: links.map(d => ({ ...d }))
+        });
+
+        // 3. Custom Position Overrides
+        const colWidth = (width - margin.left - margin.right) / 3;
+
+        sankeyNodes.forEach(node => {
+            if (node.name === 'Gross Income') {
+                node.x0 = margin.left;
+                node.x1 = margin.left + 30;
+            } else if (node.name === 'Tax' || node.name === 'Net Income') {
+                node.x0 = margin.left + colWidth;
+                node.x1 = margin.left + colWidth + 30;
+            } else if (['Total Savings', 'Expenses', 'Cash Flow', 'Cash'].includes(node.name)) {
+                node.x0 = margin.left + colWidth * 2;
+                node.x1 = margin.left + colWidth * 2 + 30;
+            } else {
+                node.x0 = width - margin.right - 30;
+                node.x1 = width - margin.right;
             }
-        };
-    }, [data]); // Re-run when data changes
+        });
+
+        sankey.update({ nodes: sankeyNodes, links: sankeyLinks });
+
+        const defs = svg.append('defs');
+
+        // 4. Render Links
+        const link = svg.append('g')
+            .attr('fill', 'none')
+            .attr('stroke-opacity', 0.5)
+            .selectAll('g')
+            .data(sankeyLinks)
+            .join('path')
+            .attr('d', sankeyLinkHorizontal())
+            .attr('stroke', d => {
+                const gradientId = `gradient-${d.source.index}-${d.target.index}`;
+                const gradient = defs.append('linearGradient')
+                    .attr('id', gradientId)
+                    .attr('gradientUnits', 'userSpaceOnUse')
+                    .attr('x1', d.source.x1)
+                    .attr('x2', d.target.x0);
+                gradient.append('stop').attr('offset', '0%').attr('stop-color', colorMap[d.source.name] || '#586e75');
+                gradient.append('stop').attr('offset', '100%').attr('stop-color', colorMap[d.target.name] || '#586e75');
+                return `url(#${gradientId})`;
+            })
+            .attr('stroke-width', d => Math.max(1, d.width))
+            .on('mouseenter', function () { d3.select(this).attr('stroke-opacity', 0.8); })
+            .on('mouseleave', function () { d3.select(this).attr('stroke-opacity', 0.5); });
+
+        // 5. Render Nodes
+        const node = svg.append('g')
+            .selectAll('g')
+            .data(sankeyNodes)
+            .join('g');
+
+        node.append('rect')
+            .attr('x', d => d.x0)
+            .attr('y', d => d.y0)
+            .attr('height', d => d.y1 - d.y0)
+            .attr('width', d => d.x1 - d.x0)
+            .attr('fill', d => colorMap[d.name] || '#839496')
+            .attr('rx', 3)
+            .append('title')
+            .text(d => `${d.name}\n$${d.value.toLocaleString()}`);
+
+        // 6. Render Labels (Two-line labels: Name and Percentage below)
+        const textNodes = node.append('text')
+            .attr('x', d => (d.x0 < width / 2 ? d.x1 + 12 : d.x0 - 12))
+            .attr('y', d => (d.y0 + d.y1) / 2)
+            .attr('text-anchor', d => (d.x0 < width / 2 ? 'start' : 'end'))
+            .attr('fill', '#fdf6e3')
+            .style('font-family', 'Outfit, sans-serif')
+            .style('font-weight', 'bold')
+            .style('font-size', '13px');
+
+        textNodes.append('tspan')
+            .attr('x', d => (d.x0 < width / 2 ? d.x1 + 12 : d.x0 - 12))
+            .attr('dy', '-0.2em')
+            .text(d => d.name);
+
+        textNodes.append('tspan')
+            .attr('x', d => (d.x0 < width / 2 ? d.x1 + 12 : d.x0 - 12))
+            .attr('dy', '1.2em')
+            .attr('fill-opacity', 0.8)
+            .style('font-weight', 'normal')
+            .style('font-size', '11px')
+            .text(d => {
+                const total = data.sankeyGross || 1;
+                const pct = ((d.value / total) * 100).toFixed(0);
+                return `(${pct}%)`;
+            });
+
+        link.append('title')
+            .text(d => `${d.source.name} → ${d.target.name}\n$${d.value.toLocaleString()}`);
+
+    }, [data, dimensions]);
 
     return (
-        <div className="chart-card wide glow">
+        <div className="chart-card wide glow" style={{ overflow: 'hidden' }}>
             <div className="card-head">
-                <h3>Income Flow ({data.sankeyYear})</h3>
+                <h3>Income Flow ({selectedYear === 'All' ? 'All Time' : selectedYear})</h3>
+                <div className="year-selector" style={{ display: 'flex', gap: '8px' }}>
+                    {yearOptions && yearOptions.map((year) => (
+                        <button
+                            key={year}
+                            onClick={() => setSelectedYear(year)}
+                            style={{
+                                background: selectedYear === year ? 'rgba(16, 185, 129, 0.3)' : 'rgba(253, 246, 227, 0.05)',
+                                color: selectedYear === year ? '#10b981' : '#839496',
+                                border: `1px solid ${selectedYear === year ? '#10b981' : 'rgba(131, 148, 150, 0.2)'}`,
+                                borderRadius: '4px',
+                                padding: '4px 12px',
+                                fontSize: '13px',
+                                cursor: 'pointer',
+                                fontWeight: '600',
+                                transition: 'all 0.2s ease'
+                            }}
+                        >
+                            {year}
+                        </button>
+                    ))}
+                </div>
             </div>
-            <div style={{ height: '500px', position: 'relative' }}>
-                <canvas ref={chartRef} />
+            <div ref={containerRef} style={{ height: '450px', width: '100%' }}>
+                <svg
+                    ref={svgRef}
+                    width={dimensions.width}
+                    height={dimensions.height}
+                    style={{ width: '100%', height: '100%', overflow: 'visible' }}
+                />
             </div>
         </div>
     );

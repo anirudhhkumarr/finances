@@ -25,7 +25,7 @@ const MonthBlock = ({ data }) => {
         18: 'Amex',
         21: 'US Bank',
         27: 'PG&E',
-        29: 'Xfinity',
+        28: 'Xfinity',
         31: 'Salary'
     };
 
@@ -43,8 +43,11 @@ const MonthBlock = ({ data }) => {
             else dailyNet -= amt;
         });
 
-        // Apply transactions to running balance first
-        runningBal += dailyNet;
+        // Track what the balance WOULD be without any override for THIS specific day
+        const autoBal = runningBal + dailyNet;
+
+        // Update running balance for next day
+        runningBal = autoBal;
 
         // Check for Override (Sets the ENDING balance for this day)
         const overrideVal = overrides[dateStr];
@@ -56,26 +59,11 @@ const MonthBlock = ({ data }) => {
 
         if (dayTxns.length > 0) {
             dayTxns.forEach((txn, idx) => {
-                // Show balance only on the last transaction of the day? 
-                // Or repeat it? Usually balance is shown on the row.
-                // If multiple txns, usually the last one shows the final daily balance.
-                // But for simplicity/editing, maybe allow editing on any?
-                // Let's attach the daily balance to all, but visually it might look repetitive.
-                // Current UI: 1 row per txn. If multiple, we have multiple rows with same day.
-                // It's cleaner if only the last row of the day shows the Daily Balance?
-                // But "override by clicking on any date".
-                // If I click on the first txn of the day and override, it overrides the DAY's balance.
-
-                // Let's just output the same runningBal for all, as 'runningBal' is end-of-day in this loop logic.
-                // NOTE: Real running balance fluctuates *during* the day.
-                // BUT my loop calculates `runningBal += dailyNet` (bulk).
-                // So I am displaying "End of Day Balance" on every transaction row for that day.
-                // This implies "After all transactions today, balance is X".
-
                 chronologicalRows.push({
                     dateStr,
                     dayNum: d,
                     balance: runningBal,
+                    autoBal: autoBal, // Store for comparison
                     txn,
                     isFirst: false,
                     isOverride
@@ -86,6 +74,7 @@ const MonthBlock = ({ data }) => {
                 dateStr,
                 dayNum: d,
                 balance: runningBal,
+                autoBal: autoBal, // Store for comparison
                 txn: null,
                 autoCategory: recurringExpenses[d] || '',
                 isFirst: true,
@@ -109,14 +98,30 @@ const MonthBlock = ({ data }) => {
         saveTransaction(dateStr, id, field, val, { category: autoCategory });
     };
 
-    const handleBalanceBlur = (dateStr, val) => {
-        setBalanceOverride(dateStr, val);
-    };
+    const handleBalanceBlur = (dateStr, val, currentBalance, autoBal, isCurrentlyOverride) => {
+        const inputVal = val.trim();
 
-    // Calculate Month End Balance (Most recent running bal) for Summary
-    // Since we reversed, it's the first row's balance?
-    // Yes, displayRows[0].balance is the balance of the last day (or last processed day).
-    const currentMonthBalance = displayRows.length > 0 ? displayRows[0].balance : startBal;
+        // 1. If empty, clear the override
+        if (inputVal === '') {
+            setBalanceOverride(dateStr, '');
+            return;
+        }
+
+        const numVal = parseFloat(inputVal);
+        if (isNaN(numVal)) return;
+
+        // 2. If it matches the calculated balance, clear the override
+        // Using a small epsilon for float comparison though usually they are integers
+        if (Math.abs(numVal - autoBal) < 0.01) {
+            setBalanceOverride(dateStr, '');
+            return;
+        }
+
+        // 3. If it changed from the current (potentially overridden) balance, update it
+        if (Math.abs(numVal - currentBalance) > 0.01) {
+            setBalanceOverride(dateStr, numVal);
+        }
+    };
 
     // Filter rows if hideEmpty is true
     const visibleRows = hideEmpty
@@ -153,7 +158,7 @@ const MonthBlock = ({ data }) => {
 
                     return (
                         <div key={key} className={`balance-row ${row.txn ? 'active' : ''} ${!row.txn && row.autoCategory ? 'recurring' : ''} ${typeClass}`}>
-                            <div className={`bal-day ${row.txn?.category ? 'highlight' : ''}`}>{row.showDay ? row.dayNum : ''}</div>
+                            <div className={`bal-day ${(row.txn?.category || row.autoCategory) ? 'highlight' : ''}`}>{row.showDay ? row.dayNum : ''}</div>
                             <div className="bal-weekday">{row.showDay ? weekday : ''}</div>
 
                             <input
@@ -165,24 +170,14 @@ const MonthBlock = ({ data }) => {
                                 onBlur={(e) => handleBlur(row.dateStr, row.txn?.id, 'amount', e.target.value, row.autoCategory)}
                             />
 
-                            {/* Balance Cell - Now Editable */}
-                            {/* Only show/edit on the first row for a given date (which is the last chrono row)? 
-                                In 'processedRows' (reversed), the first row encountered for a date IS the last chronological transaction (End of Day).
-                                So 'showDay' corresponds to the newest entry for that day.
-                                We should probably only show the balance on that entry to avoid clutter?
-                                Existing code showed it on every row. User said "running balance main summary".
-                                Let's keep it on every row but maybe only editable on one?
-                                Or editable on all => updates the same date override.
-                            */}
                             <div className={`bal-balance-wrapper ${row.balance >= 0 ? 'positive' : 'negative'}`}>
                                 <input
-                                    key={`${key}-bal-${row.balance}`} // Force re-render on external update
+                                    key={`${key}-bal-${row.balance}`}
                                     type="text"
+                                    inputMode="decimal"
                                     className={`bal-balance-input ${row.isOverride ? 'override' : ''}`}
-                                    defaultValue={row.balance} // Display raw number for editing?
-                                    // Ideally format with commas on blur, but for input type number/text...
-                                    // Let's use text to allow formating but simplicity first.
-                                    onBlur={(e) => handleBalanceBlur(row.dateStr, e.target.value)}
+                                    defaultValue={row.balance}
+                                    onBlur={(e) => handleBalanceBlur(row.dateStr, e.target.value, row.balance, row.autoBal, row.isOverride)}
                                     title="Click to override daily ending balance"
                                 />
                             </div>
@@ -207,6 +202,8 @@ const MonthBlock = ({ data }) => {
                 <option value="Discover" />
                 <option value="Amex" />
                 <option value="US Bank" />
+                <option value="PG&E" />
+                <option value="Xfinity" />
                 <option value="Invest" />
             </datalist>
         </div>

@@ -88,6 +88,7 @@ const DataCell = React.memo(({
                 <input
                     autoFocus
                     type="text"
+                    inputMode="decimal"
                     defaultValue={formula || value}
                     onBlur={handleBlur}
                     onKeyDown={handleKey}
@@ -215,7 +216,7 @@ const DataEntry = () => {
         <div className="data-entry-wrapper">
             <table className="dc-table">
                 <colgroup>
-                    <col style={{ width: '100px', minWidth: '100px' }} />
+                    <col className="w-month" />
                     {groupState.income ? <><col /><col /><col /><col /></> : <col className="collapsed-col" />}
                     {groupState.savings ? <><col /><col /></> : <col className="collapsed-col" />}
                     {groupState.expenses ? <><col /><col /><col /><col /><col /><col /><col /></> : <col className="collapsed-col" />}
@@ -285,8 +286,10 @@ const DataEntry = () => {
                                 {/* Year Summary / Toggle Row */}
                                 <tr className="dc-year-row" onClick={() => toggleYear(year)}>
                                     <td className="sticky-col-month year-toggle">
-                                        {isExpanded ? <IconChevronDown /> : <IconChevronRight />}
-                                        <span style={{ marginLeft: 8 }}>{year}</span>
+                                        <div className="dc-sticky-content">
+                                            {isExpanded ? <IconChevronDown /> : <IconChevronRight />}
+                                            <span style={{ marginLeft: 8 }}>{year}</span>
+                                        </div>
                                     </td>
 
                                     {/* Income Group Summary */}
@@ -334,18 +337,20 @@ const DataEntry = () => {
 
                                     return (
                                         <tr key={r.id} className="dc-data-row">
-                                            <td className="sticky-col-month month-label group">
-                                                {label}
-                                                <button
-                                                    className="dc-sync-btn"
-                                                    title="Reset & Sync from Transactions"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        syncRecord(r.id);
-                                                    }}
-                                                >
-                                                    <IconRefresh />
-                                                </button>
+                                            <td className="sticky-col-month month-label">
+                                                <div className="dc-sticky-content">
+                                                    {label}
+                                                    <button
+                                                        className="dc-sync-btn"
+                                                        title="Reset & Sync from Transactions"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            syncRecord(r.id);
+                                                        }}
+                                                    >
+                                                        <IconRefresh />
+                                                    </button>
+                                                </div>
                                             </td>
 
                                             {/* Income Row Data */}

@@ -182,14 +182,11 @@ body {
 .month-section {
   margin-bottom: 0;
   background: transparent;
-  /* border-radius: var(--radius-md); Combined radius if stacked? Maybe keep for top/bottom only? */
-  /* To make them look like one continuous sheet, remove radius and border between them.
-     But simpler first: just remove margin. */
   border-radius: 0;
-  overflow: hidden;
+  overflow: visible;
+  /* Required for sticky headers within */
   border: 1px solid var(--card-border);
   border-bottom: none;
-  /* Merge borders */
 }
 
 .month-section:last-child {
@@ -206,20 +203,22 @@ body {
 }
 
 .sticky-month-header {
+  position: -webkit-sticky;
   position: sticky;
-  top: 0;
-  z-index: 20;
-  background: var(--bg-primary);
+  top: 48px;
+  /* Sticks below the column header */
+  z-index: 90;
+  background: var(--bg-secondary);
   border-bottom: 1px solid var(--card-border);
-  padding: 16px 24px;
+  padding: 12px 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-family: var(--font-heading);
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--text-primary);
-  box-shadow: 0 4px 6px -1px var(--bg-primary);
+  box-shadow: none;
 }
 
 .month-stats-brief {
@@ -700,35 +699,6 @@ input[type=number] {
   font-weight: 700;
 }
 
-/* Global Sticky Header */
-.balances-global-header {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background: var(--bg-primary);
-  border-bottom: 1px solid var(--card-border);
-  padding: 16px 24px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0;
-  /* Visual separator from first month */
-}
-
-.global-balance-label {
-  font-family: var(--font-heading);
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.global-balance-value {
-  font-family: var(--font-mono);
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--accent-color);
-  text-shadow: 0 0 10px var(--accent-glow);
-}
 
 /* Adjust sticky month header to stick below global header? 
    No, usually stack. Sticky elements stack by default if top is properly managed.
@@ -737,16 +707,6 @@ input[type=number] {
    Reference: "month blocks should be contiguous".
    Let's try standard sticky. 
 */
-.sticky-month-header {
-  top: 61px;
-  /* Approx height of global header */
-  z-index: 90;
-  /* Slightly less than global header */
-  box-shadow: none;
-  border-bottom: 1px solid var(--card-border);
-  background: var(--bg-secondary);
-  /* matching bg-secondary essentially */
-}
 
 /* Sticky Layout Stacking */
 /* 1. Global Balance Header: Top 0, H ~61px */
@@ -762,17 +722,6 @@ input[type=number] {
   box-shadow: 0 4px 6px -1px var(--shadow-color);
 }
 
-/* Adjust Month Header to slide under or stack below? */
-.sticky-month-header {
-  position: relative;
-  /* Changed from sticky to relative/static */
-  top: auto;
-  z-index: 10;
-  /* background: rgba(30, 41, 59, 0.95); Keep bg for visual separation */
-  background: var(--bg-secondary);
-  border-bottom: 1px solid var(--card-border);
-  box-shadow: none;
-}
 
 /* --- Row State Highlighting --- */
 /* User Set / Active Row */
@@ -1068,11 +1017,6 @@ input[type=number] {
   letter-spacing: 0.5px;
 }
 
-.sticky-month-header {
-  font-family: var(--font-heading);
-  font-size: 14px;
-  font-weight: 600;
-}
 
 /* Toggle Empty Button */
 .toggle-empty-btn {
@@ -1243,9 +1187,7 @@ input[type=number] {
     padding: 0 16px;
     /* Increased side margins */
     padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px));
-    height: auto;
     min-height: 100vh;
-    overflow-x: hidden;
     box-sizing: border-box;
   }
 
@@ -1253,8 +1195,6 @@ input[type=number] {
   .annual-dashboard {
     padding: 16px 0;
     /* No horizontal padding here, use main-content */
-    height: auto;
-    overflow-x: hidden;
     max-width: 100vw;
     box-sizing: border-box;
   }
@@ -1302,8 +1242,6 @@ input[type=number] {
     max-width: 100vw;
     min-width: 0;
     flex-direction: column;
-    height: auto;
-    overflow-x: hidden;
   }
 
   .balances-sidebar {
@@ -1315,7 +1253,6 @@ input[type=number] {
     max-width: 800px;
     width: 100%;
     margin: 0 auto;
-    overflow-x: hidden;
     box-sizing: border-box;
   }
 
@@ -1328,16 +1265,6 @@ input[type=number] {
     border-radius: 0;
   }
 
-  .sticky-month-header {
-    position: -webkit-sticky;
-    position: sticky;
-    top: 41px;
-    /* Below global column header */
-    z-index: 60;
-    padding: 12px 16px;
-    font-size: 14px;
-    background: var(--bg-primary) !important;
-  }
 
   /* Allow horizontal scroll for data rows */
   .month-grid {
@@ -1356,14 +1283,6 @@ input[type=number] {
     align-items: center;
   }
 
-  .balance-row.header {
-    background: var(--bg-primary);
-    position: -webkit-sticky;
-    position: sticky;
-    top: 0;
-    z-index: 70;
-    border-bottom: 2px solid var(--card-border);
-  }
 
   .balance-row input {
     font-size: 16px;
@@ -1382,24 +1301,6 @@ input[type=number] {
     font-size: 11px;
   }
 
-  /* Compact header labels to prevent overlap */
-  .balance-row.header .bal-day {
-    font-size: 0;
-  }
-
-  .balance-row.header .bal-day::after {
-    content: '#';
-    font-size: 11px;
-  }
-
-  .balance-row.header .bal-weekday {
-    font-size: 0;
-  }
-
-  .balance-row.header .bal-weekday::after {
-    content: 'D';
-    font-size: 11px;
-  }
 
   .bal-amt {
     flex: 4 1 75px;

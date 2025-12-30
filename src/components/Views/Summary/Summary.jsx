@@ -1,89 +1,87 @@
-import React from 'react';
-import { useFinance } from '../../../contexts/FinanceContext';
+import React, { useState } from 'react';
 import {
     Chart as ChartJS,
     CategoryScale,
     LinearScale,
+    PointElement,
+    LineElement,
     BarElement,
     Title,
     Tooltip,
     Legend,
+    Filler
 } from 'chart.js';
-import { Bar } from 'react-chartjs-2';
+import { SankeyController, Flow } from 'chartjs-chart-sankey';
+import { useAnnualData } from './hooks/useAnnualData';
+import IncomeFlowChart from './components/IncomeFlowChart';
+import YearlyFinancialsChart from './components/YearlyFinancialsChart';
+import IncomeAllocationChart from './components/IncomeAllocationChart';
+import CategoryGrowthChart from './components/CategoryGrowthChart';
 
 ChartJS.register(
     CategoryScale,
     LinearScale,
+    PointElement,
+    LineElement,
     BarElement,
+    SankeyController,
+    Flow,
     Title,
     Tooltip,
-    Legend
+    Legend,
+    Filler
 );
 
-const Summary = () => {
-    const { appData } = useFinance();
+const AnnualAnalytics = () => {
+    const [selectedYear, setSelectedYear] = useState('2025');
+    const annualData = useAnnualData(selectedYear);
 
-    const data = React.useMemo(() => {
-        // Sort Ascending for Chart
-        const sorted = (appData.records || []).slice().sort((a, b) => a.id.localeCompare(b.id)); // Limit to last 12?
-        const labels = sorted.map(r => r.id);
+    // Slider Setup
+    const sliderOptions = [...annualData.years, 'All'];
+    const sliderIndex = sliderOptions.indexOf(selectedYear) === -1 ? sliderOptions.length - 1 : sliderOptions.indexOf(selectedYear);
 
-        return {
-            labels,
-            datasets: [
-                {
-                    label: 'Net Income',
-                    data: sorted.map(r => (r.income?.net || 0) + (r.income?.other || 0)),
-                    backgroundColor: '#4ade80',
-                },
-                {
-                    label: 'Expenses',
-                    data: sorted.map(r => {
-                        const e = r.expenses || {};
-                        return (e.rent || 0) + (e.car || 0) + (e.amex || 0) + (e.discover || 0) + (e.usbank || 0) + (e.chase || 0) + (e.other || 0);
-                    }),
-                    backgroundColor: '#f87171',
-                }
-            ],
-        };
-    }, [appData.records]);
-
-    const options = {
-        responsive: true,
-        plugins: {
-            legend: {
-                position: 'top',
-                labels: { color: '#94a3b8' }
-            },
-            title: {
-                display: true,
-                text: 'Income vs Expenses',
-                color: '#f8fafc'
-            },
-        },
-        scales: {
-            x: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } },
-            y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }
-        }
+    const handleSliderChange = (e) => {
+        const idx = parseInt(e.target.value);
+        setSelectedYear(sliderOptions[idx]);
     };
 
     return (
-        <div className="dashboard-grid">
-            <div className="card full-width">
-                <h3>Financial Overview</h3>
-                <div className="chart-wrapper">
-                    <Bar options={options} data={data} redraw={true} />
+        <div className="annual-dashboard">
+            <div className="dash-header">
+                <div>
+                    <h1 className="title">Annual Ledger</h1>
+                </div>
+                {/* Year Slider Control */}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', width: '200px' }}>
+                    <label style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '4px', fontWeight: 600 }}>
+                        {selectedYear === 'All' ? 'All Time' : selectedYear}
+                    </label>
+                    <input
+                        type="range"
+                        min="0"
+                        max={sliderOptions.length - 1}
+                        value={sliderIndex}
+                        onChange={handleSliderChange}
+                        style={{ width: '100%', accentColor: '#10b981' }}
+                    />
                 </div>
             </div>
 
-            <div className="card">
-                <h3>Recent Activity</h3>
-                <div style={{ color: '#94a3b8', fontSize: '13px' }}>
-                    Coming soon...
-                </div>
+            <div className="grid-layout">
+                {/* 1. Sankey Flow (Latest Year) - Full Width */}
+                <IncomeFlowChart data={annualData} />
+
+                {/* 2. The Annual Ledger (Detailed Stack) */}
+                <YearlyFinancialsChart data={annualData} />
+
+                {/* 3. Income Allocation Trends (Line) */}
+                <IncomeAllocationChart data={annualData} />
+
+                {/* 4. Category Growth Trends (Dedicated Line Chart) */}
+                <CategoryGrowthChart data={annualData} />
             </div>
         </div>
     );
 };
 
-export default Summary;
+export default AnnualAnalytics;

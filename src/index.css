@@ -280,6 +280,15 @@ body {
   font-family: var(--font-body);
 }
 
+/* Hide datalist dropdown arrow */
+.bal-cat::-webkit-calendar-picker-indicator {
+  display: none !important;
+}
+
+.bal-cat::-webkit-list-button {
+  display: none !important;
+}
+
 /* Balance Column */
 .bal-balance {
   text-align: right;
@@ -1242,37 +1251,38 @@ input[type=number] {
   .balance-row {
     min-width: unset;
     width: 100%;
-    padding: 6px 8px;
-    font-size: 12px;
     box-sizing: border-box;
-    gap: 4px;
-    /* Tighter column spacing */
+    gap: 0;
+    padding: 12px 12px;
+    /* Balanced horizontal padding */
   }
 
   .balance-row.header {
     min-width: unset;
     width: 100%;
-    padding: 6px 8px;
-    font-size: 11px;
     box-sizing: border-box;
   }
 
   .balance-row input {
-    font-size: 12px;
-    padding: 4px 6px;
+    font-size: 16px;
+    /* Prevents iOS zoom on focus */
+    padding: 8px 6px;
   }
 
   /* Compact date/day columns on mobile */
   .bal-day {
-    width: 20px;
-    min-width: 20px;
-    font-size: 11px;
+    width: 16px;
+    min-width: 16px;
   }
 
   .bal-weekday {
-    width: 28px;
-    min-width: 28px;
-    font-size: 10px;
+    width: 24px;
+    min-width: 24px;
+  }
+
+  .bal-cat {
+    flex: 1;
+    min-width: 80px;
   }
 
   /* Toggle button fix */

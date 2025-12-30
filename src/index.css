@@ -1312,8 +1312,9 @@ input[type=number] {
 
   #balances-year-stack {
     padding: 12px;
-    max-width: 100%;
+    max-width: 800px;
     width: 100%;
+    margin: 0 auto;
     overflow-x: hidden;
     box-sizing: border-box;
   }
@@ -1330,8 +1331,9 @@ input[type=number] {
   .sticky-month-header {
     position: -webkit-sticky;
     position: sticky;
-    top: 0;
-    z-index: 50;
+    top: 41px;
+    /* Below global column header */
+    z-index: 60;
     padding: 12px 16px;
     font-size: 14px;
     background: var(--bg-primary) !important;
@@ -1356,9 +1358,11 @@ input[type=number] {
 
   .balance-row.header {
     background: var(--bg-primary);
+    position: -webkit-sticky;
     position: sticky;
     top: 0;
-    z-index: 10;
+    z-index: 70;
+    border-bottom: 2px solid var(--card-border);
   }
 
   .balance-row input {
@@ -1368,14 +1372,12 @@ input[type=number] {
   }
 
   .bal-day {
-    width: 20px;
-    flex: 0 0 auto;
+    flex: 1 1 20px;
     color: var(--text-secondary);
   }
 
   .bal-weekday {
-    width: 30px;
-    flex: 0 0 auto;
+    flex: 1.5 1 30px;
     color: var(--text-secondary);
     font-size: 11px;
   }
@@ -1400,18 +1402,27 @@ input[type=number] {
   }
 
   .bal-amt {
-    width: 75px;
-    flex: 0 0 auto;
+    flex: 4 1 75px;
+  }
+
+  /* Widen money columns on larger mobile/tablets to balance the category column */
+  @media (min-width: 600px) {
+    .bal-amt {
+      flex: 4 1 125px;
+    }
+
+    .bal-balance-wrapper {
+      flex: 4.5 1 135px;
+    }
   }
 
   .bal-balance-wrapper {
-    width: 85px;
-    flex: 0 0 auto;
+    flex: 4.5 1 85px;
   }
 
   .bal-cat {
-    flex: 1;
-    min-width: 80px;
+    flex: 8 1 100px;
+    min-width: 0;
   }
 
   .bal-cat {

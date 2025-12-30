@@ -234,8 +234,8 @@ const Balances = () => {
                 <div className="balance-row header sticky-columns">
                     <div className="bal-day">Date</div>
                     <div className="bal-weekday">Day</div>
-                    <div className="bal-amt" style={{ textAlign: 'right' }}>Amount</div>
-                    <div className="bal-balance">Balance</div>
+                    <div className="bal-amt">Amount</div>
+                    <div className="bal-balance-wrapper">Balance</div>
                     <div className="bal-cat">Category</div>
                 </div>
 

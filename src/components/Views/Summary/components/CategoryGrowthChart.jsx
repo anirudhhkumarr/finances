@@ -15,8 +15,8 @@ const CategoryGrowthChart = ({ data }) => {
                         {
                             label: 'Net Income',
                             data: data.metrics.map(d => d.growth),
-                            borderColor: '#3b82f6',
-                            backgroundColor: '#3b82f6',
+                            borderColor: '#268bd2',
+                            backgroundColor: '#268bd2',
                             borderWidth: 2,
                             pointRadius: 4,
                             tension: 0.3,
@@ -25,8 +25,8 @@ const CategoryGrowthChart = ({ data }) => {
                         {
                             label: 'Savings',
                             data: data.metrics.map(d => d.savingsGrowth),
-                            borderColor: '#10b981',
-                            backgroundColor: '#10b981',
+                            borderColor: '#2aa198', // Cyan
+                            backgroundColor: '#2aa198',
                             borderWidth: 2,
                             pointRadius: 4,
                             tension: 0.3,
@@ -35,8 +35,8 @@ const CategoryGrowthChart = ({ data }) => {
                         {
                             label: 'Tax',
                             data: data.metrics.map(d => d.taxGrowth),
-                            borderColor: '#eab308',
-                            backgroundColor: '#eab308',
+                            borderColor: '#b58900',
+                            backgroundColor: '#b58900',
                             borderWidth: 2,
                             pointRadius: 4,
                             tension: 0.3,
@@ -45,8 +45,8 @@ const CategoryGrowthChart = ({ data }) => {
                         {
                             label: 'Rent',
                             data: data.metrics.map(d => d.rentGrowth),
-                            borderColor: '#ef4444',
-                            backgroundColor: '#ef4444',
+                            borderColor: '#d33682',
+                            backgroundColor: '#d33682',
                             borderWidth: 2,
                             pointRadius: 4,
                             tension: 0.3,
@@ -55,8 +55,8 @@ const CategoryGrowthChart = ({ data }) => {
                         {
                             label: 'Other Exp.',
                             data: data.metrics.map(d => d.nonRentGrowth),
-                            borderColor: '#f97316', // Orange
-                            backgroundColor: '#f97316',
+                            borderColor: '#dc322f', // Red (Avoid Orange/Brown)
+                            backgroundColor: '#dc322f',
                             borderWidth: 2,
                             pointRadius: 4,
                             tension: 0.3,
@@ -67,7 +67,7 @@ const CategoryGrowthChart = ({ data }) => {
                     ...commonOptions,
                     plugins: {
                         ...commonOptions.plugins,
-                        legend: { display: true, labels: { color: '#94a3b8' } },
+                        legend: { display: true, labels: { color: '#839496' } },
                         tooltip: {
                             callbacks: {
                                 label: (ctx) => `${ctx.dataset.label}: ${ctx.raw.toFixed(1)}%`
@@ -75,10 +75,10 @@ const CategoryGrowthChart = ({ data }) => {
                         }
                     },
                     scales: {
-                        x: { grid: { display: false }, ticks: { color: '#94a3b8' } },
+                        x: { grid: { display: false }, ticks: { color: '#839496' } },
                         y: {
-                            grid: { color: '#334155', borderDash: [5, 5] },
-                            ticks: { color: '#64748b', callback: (v) => v + '%' }
+                            grid: { color: '#073642', borderDash: [5, 5] },
+                            ticks: { color: '#586e75', callback: (v) => v + '%' }
                         }
                     }
                 }} />

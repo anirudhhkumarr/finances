@@ -1,58 +1,66 @@
-import React from 'react';
-import { Chart } from 'react-chartjs-2';
-import { commonOptions, catColors } from './ChartConfig';
+import React, { useEffect, useRef } from 'react';
+import { Chart } from 'chart.js';
+import { commonOptions } from './ChartConfig';
 
 const IncomeFlowChart = ({ data }) => {
-    // Sankey Colors (Blue Income, Green Savings, Yellow Tax, Red Expenses)
+    const chartRef = useRef(null);
+    const chartInstance = useRef(null);
+
+    // Sankey Colors
     const colorMap = {
-        'Gross Income': '#3b82f6', // Blue
-        'Net Income': '#60a5fa',   // Blue 400
-        'Tax': '#eab308',          // Yellow (Gold)
-
-        'Total Savings': '#10b981', // Emerald (Green)
-        '401k': '#34d399',          // Emerald 400
-        'Stock': '#059669',         // Emerald 600
-        'Cash': '#6ee7b7',          // Emerald 300
-
-        'Expenses': '#ef4444',      // Red
-
-        // Categories
-        'Rent': catColors.rent,
-        'Car': catColors.car,
-        'Cards': catColors.cards, // Deep Red for Cards group
-        'Other': catColors.other,
-        'cards': catColors.cards, // Fallback
+        'Gross Income': '#268bd2',
+        'Net Income': '#2aa198',
+        'Tax': '#b58900',
+        'Total Savings': '#6c71c4',
+        '401k': '#6c71c4',
+        'Stock': '#2aa198',
+        'Cash': '#268bd2',
+        'Expenses': '#d33682',
+        'Rent': '#d33682',      // Base Magenta
+        'Car': '#de5599',       // Lighter Magenta
+        'Cards': '#a92b61',     // Darker Magenta
+        'Other': '#e37dae',     // Soft Pinkish Magenta
+        'cards': '#a92b61',     // Match Cards
     };
 
-    return (
-        <div className="chart-card wide glow">
-            <div className="card-head">
-                <h3>Income Flow ({data.sankeyYear})</h3>
-            </div>
-            <div style={{ height: '500px' }}>
-                <Chart type='sankey' data={{
+    useEffect(() => {
+        const ctx = chartRef.current; // Use the element directly for getChart check
+
+        // 1. Destroy any existing chart instance on this canvas (GLOBAL CHECK)
+        const existingChart = Chart.getChart(ctx);
+        if (existingChart) {
+            existingChart.destroy();
+        }
+
+        // 2. Also clear our local ref just in case
+        if (chartInstance.current) {
+            chartInstance.current.destroy();
+            chartInstance.current = null;
+        }
+
+        if (ctx && data.sankeyData) {
+            chartInstance.current = new Chart(ctx, {
+                type: 'sankey',
+                data: {
                     datasets: [{
                         label: 'Income Flow',
-                        data: data.sankeyData,
-                        colorFrom: (c) => colorMap[c.dataset.data[c.dataIndex].from] || '#94a3b8',
-                        colorTo: (c) => colorMap[c.dataset.data[c.dataIndex].to] || '#94a3b8',
+                        data: [...data.sankeyData],
+                        colorFrom: (c) => colorMap[c.dataset.data[c.dataIndex].from] || '#839496',
+                        colorTo: (c) => colorMap[c.dataset.data[c.dataIndex].to] || '#839496',
                         colorMode: 'gradient',
-                        nodePadding: 120, // Keep manual padding
+                        nodePadding: 80,
                         nodeWidth: 40,
-                        // Label Customization
                         font: { size: 14, weight: 'bold', family: "'Outfit', sans-serif" },
-                        color: '#ffffff', // White Labels
+                        color: '#fdf6e3',
                         labels: (() => {
                             const gross = data.sankeyGross || 1;
                             const labels = {};
-                            // Iterate generic categories to map to %
                             const nodes = new Set();
                             data.sankeyData.forEach(d => {
                                 nodes.add(d.from);
                                 nodes.add(d.to);
                             });
                             nodes.forEach(n => {
-                                // Find total flow for this node to calc %
                                 let val = 0;
                                 if (n === 'Gross Income') {
                                     val = gross;
@@ -65,7 +73,8 @@ const IncomeFlowChart = ({ data }) => {
                             return labels;
                         })()
                     }]
-                }} options={{
+                },
+                options: {
                     ...commonOptions,
                     plugins: {
                         ...commonOptions.plugins,
@@ -86,7 +95,25 @@ const IncomeFlowChart = ({ data }) => {
                         x: { display: false },
                         y: { display: false }
                     }
-                }} />
+                }
+            });
+        }
+
+        return () => {
+            if (chartInstance.current) {
+                chartInstance.current.destroy();
+                chartInstance.current = null;
+            }
+        };
+    }, [data]); // Re-run when data changes
+
+    return (
+        <div className="chart-card wide glow">
+            <div className="card-head">
+                <h3>Income Flow ({data.sankeyYear})</h3>
+            </div>
+            <div style={{ height: '500px', position: 'relative' }}>
+                <canvas ref={chartRef} />
             </div>
         </div>
     );

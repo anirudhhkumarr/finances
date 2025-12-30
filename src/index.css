@@ -1,22 +1,73 @@
 :root {
-  /* -- Colors (Elegant Midnight) -- */
-  --bg-primary: #0f172a;
-  --bg-secondary: #1e293b;
+  /* -- Colors (Official Solarized Dark) -- */
+  --base03: #002b36;
+  --base02: #073642;
+  --base01: #586e75;
+  --base00: #657b83;
+  --base0: #839496;
+  --base1: #93a1a1;
+  --base2: #eee8d5;
+  --base3: #fdf6e3;
+  --yellow: #b58900;
+  --orange: #cb4b16;
+  --red: #dc322f;
+  --magenta: #d33682;
+  --violet: #6c71c4;
+  --blue: #268bd2;
+  --cyan: #2aa198;
+  --green: #859900;
 
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
+  --bg-primary: var(--base03);
+  --bg-secondary: var(--base02);
 
-  --accent-color: #38bdf8;
-  --accent-glow: rgba(56, 189, 248, 0.15);
+  --text-primary: var(--base3);
+  --text-secondary: var(--base1);
+  --text-muted: var(--base01);
 
-  --success-color: #4ade80;
-  --danger-color: #f87171;
-  --warning-color: #fbbf24;
+  --accent-color: var(--blue);
+  --accent-glow: rgba(38, 139, 210, 0.3);
+  /* Blue with opacity for glow */
 
-  --card-bg: #1e293b;
-  --card-border: #334155;
-  --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --success-color: var(--green);
+  --danger-color: var(--red);
+  --warning-color: var(--yellow);
+
+  --card-bg: var(--base02);
+  --card-border: var(--base01);
+  --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  --shadow-color: rgba(0, 0, 0, 0.3);
+  --overlay-bg: rgba(0, 43, 54, 0.8);
+  /* base03 opacity */
+
+  /* Status Background Tints (Solarized Alpha) */
+  /* Cyan (Income) */
+  --cyan-bg-subtle: rgba(42, 161, 152, 0.1);
+  --cyan-bg-hover: rgba(42, 161, 152, 0.2);
+  --cyan-bg-active: rgba(42, 161, 152, 0.3);
+
+  /* Orange (Expense) - DEPRECATED for pure styling, kept for logic if needed */
+  /* Magenta (Expense - Preferred) */
+  --magenta-bg-subtle: rgba(211, 54, 130, 0.1);
+  --magenta-bg-hover: rgba(211, 54, 130, 0.2);
+  --magenta-bg-active: rgba(211, 54, 130, 0.3);
+
+  /* Violet (Invest/Savings) */
+  --violet-bg-subtle: rgba(108, 113, 196, 0.1);
+  --violet-bg-hover: rgba(108, 113, 196, 0.2);
+  --violet-bg-active: rgba(108, 113, 196, 0.3);
+
+  /* Deprecated but kept for compatibility just in case */
+  --success-bg-subtle: var(--cyan-bg-subtle);
+  --success-bg-hover: var(--cyan-bg-hover);
+  --success-bg-active: var(--cyan-bg-active);
+
+  --danger-bg-subtle: var(--magenta-bg-subtle);
+  --danger-bg-hover: var(--magenta-bg-hover);
+  --danger-bg-active: var(--magenta-bg-active);
+
+  --warning-bg-subtle: var(--violet-bg-subtle);
+  --warning-bg-hover: var(--violet-bg-hover);
+  --warning-bg-active: var(--violet-bg-active);
 
   /* -- Typography -- */
   --font-heading: 'Outfit', -apple-system, sans-serif;
@@ -87,14 +138,14 @@ body {
 }
 
 .nav-btn-icon:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--base03);
   color: var(--text-primary);
 }
 
 .nav-btn-icon.active {
   background: var(--accent-color);
-  color: #0f172a;
-  box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
+  color: var(--bg-primary);
+  box-shadow: 0 4px 12px var(--accent-glow);
 }
 
 .main-content {
@@ -147,8 +198,7 @@ body {
   position: sticky;
   top: 0;
   z-index: 20;
-  background: rgba(15, 23, 42, 0.95);
-  backdrop-filter: blur(8px);
+  background: var(--bg-primary);
   border-bottom: 1px solid var(--card-border);
   padding: 16px 24px;
   display: flex;
@@ -158,7 +208,7 @@ body {
   font-size: 16px;
   font-weight: 600;
   color: var(--text-primary);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px -1px var(--bg-primary);
 }
 
 .month-stats-brief {
@@ -200,7 +250,7 @@ body {
 }
 
 .balance-row:hover {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--bg-secondary);
 }
 
 /* Header Row */
@@ -273,7 +323,7 @@ body {
 
 .bal-amt:hover,
 .bal-cat:hover {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--bg-secondary);
 }
 
 .bal-cat {
@@ -349,7 +399,7 @@ body {
   top: 0;
   z-index: 20;
   background: var(--bg-primary);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 2px var(--bg-primary);
 }
 
 .dc-header-row th {
@@ -376,19 +426,19 @@ body {
 
 /* Accent Colors for Dark Theme */
 .dc-group-th.income {
-  background: rgba(74, 222, 128, 0.1);
+  background: var(--bg-secondary);
   color: var(--success-color);
   border-top: 3px solid var(--success-color);
 }
 
 .dc-group-th.savings {
-  background: rgba(251, 191, 36, 0.1);
+  background: var(--bg-secondary);
   color: var(--warning-color);
   border-top: 3px solid var(--warning-color);
 }
 
 .dc-group-th.expenses {
-  background: rgba(248, 113, 113, 0.1);
+  background: var(--bg-secondary);
   color: var(--danger-color);
   border-top: 3px solid var(--danger-color);
 }
@@ -448,7 +498,7 @@ body {
 }
 
 .dc-year-row:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-secondary);
 }
 
 .dc-year-row td {
@@ -461,7 +511,7 @@ body {
   border-bottom: 2px solid var(--card-border);
   /* Stronger border */
   text-align: right;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(253, 246, 227, 0.05);
   /* Highlight whole row */
 }
 
@@ -480,14 +530,14 @@ body {
 
 /* Data Rows */
 .dc-data-row:hover td {
-  background-color: rgba(255, 255, 255, 0.03);
+  background-color: var(--bg-secondary);
   /* Subtle highlight */
 }
 
 .dc-cell {
   padding: 0;
   height: 36px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid var(--card-border);
   border-right: 1px solid var(--card-border);
   position: relative;
   background: transparent;
@@ -527,7 +577,7 @@ body {
   font-family: inherit;
   font-size: inherit;
   background: var(--bg-primary);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 4px 6px -1px var(--shadow-color);
   color: var(--text-primary);
   outline: none;
   margin: 0;
@@ -580,7 +630,7 @@ body {
 }
 
 .bal-balance-input:hover {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(253, 246, 227, 0.03);
 }
 
 .bal-balance-input:focus {
@@ -592,9 +642,9 @@ body {
 
 /* Visual Indicator for Overrides */
 .bal-balance-input.override {
-  color: var(--accent-color) !important;
-  border-bottom: 1px dashed var(--accent-color);
-  background: rgba(56, 189, 248, 0.05);
+  color: var(--cyan) !important;
+  border-bottom: 1px dashed var(--cyan);
+  background: var(--bg-primary);
 }
 
 /* Remove Number Input Spinners */
@@ -622,9 +672,9 @@ input[type=number] {
 
 /* Highlight Date if Category exists */
 .bal-day.highlight {
-  color: var(--accent-color);
+  color: var(--cyan);
+  /* Cyan fits Solarized better for subtle highlights */
   font-weight: 700;
-  text-shadow: 0 0 8px var(--accent-glow);
 }
 
 /* Global Sticky Header */
@@ -632,10 +682,9 @@ input[type=number] {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(15, 23, 42, 0.95);
-  backdrop-filter: blur(8px);
-  padding: 16px 24px;
+  background: var(--bg-primary);
   border-bottom: 1px solid var(--card-border);
+  padding: 16px 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -672,7 +721,7 @@ input[type=number] {
   /* Slightly less than global header */
   box-shadow: none;
   border-bottom: 1px solid var(--card-border);
-  background: rgba(30, 41, 59, 0.95);
+  background: var(--bg-secondary);
   /* matching bg-secondary essentially */
 }
 
@@ -687,7 +736,7 @@ input[type=number] {
   z-index: 95;
   background: var(--bg-primary);
   border-bottom: 2px solid var(--card-border);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px -1px var(--shadow-color);
 }
 
 /* Adjust Month Header to slide under or stack below? */
@@ -705,98 +754,104 @@ input[type=number] {
 /* --- Row State Highlighting --- */
 /* User Set / Active Row */
 .balance-row.active {
-  background: rgba(30, 41, 59, 0.4);
+  background: var(--bg-secondary);
   /* Slightly distinct from bg-secondary */
   /* border-left: 2px solid var(--accent-color); Optional accent */
 }
 
 /* User Set / Active Row Hover */
 .balance-row.active:hover {
-  background: rgba(30, 41, 59, 0.8);
+  background: var(--bg-primary);
 }
 
 
 /* Prepopulated / Recurring Row */
 .balance-row.recurring {
-  background: rgba(74, 222, 128, 0.03);
+  background: var(--success-bg-subtle);
   /* Very subtle green tint for recurring? Or just distinct grey */
 }
 
 .balance-row.recurring:hover {
-  background: rgba(74, 222, 128, 0.08);
+  background: var(--success-bg-hover);
 }
 
 /* Override Input Text Color */
 /* Ensure it overrides the positive/negative color inheritance */
 .bal-balance-wrapper .bal-balance-input.override {
-  color: var(--accent-color) !important;
+  color: var(--cyan) !important;
   font-weight: 700;
-  background: rgba(56, 189, 248, 0.1);
+  background: var(--bg-primary);
   /* Stronger background for visibility */
-  border-bottom: 2px solid var(--accent-color);
+  border-bottom: 2px solid var(--cyan);
   /* Stronger indicator */
   border-radius: 4px;
 }
 
 /* --- Details: Color Coding Income/Expense/Invest --- */
 
-/* Green for Income (Subtle) */
+/* Green (now Cyan) for Income (Subtle) */
 .balance-row.type-income.active {
-  background: rgba(16, 185, 129, 0.15);
-  border-left: 3px solid #10b981;
+  background: var(--cyan-bg-active);
+  /* Solarized Cyan tint */
+  border-left: 3px solid var(--cyan);
 }
 
 .balance-row.type-income.recurring {
-  background: rgba(16, 185, 129, 0.08);
+  background: var(--cyan-bg-subtle);
 }
 
-/* Red for Expense (Subtle) */
+/* Magenta (Expense) */
 .balance-row.type-expense.active {
-  background: rgba(239, 68, 68, 0.15);
-  border-left: 3px solid #ef4444;
+  background: var(--magenta-bg-active);
+  /* Solarized Magenta tint */
+  border-left: 3px solid var(--magenta);
 }
 
 .balance-row.type-expense.recurring {
-  background: rgba(239, 68, 68, 0.08);
+  background: var(--magenta-bg-subtle);
 }
 
-/* Yellow for Invest (Subtle) */
+/* Yellow (now Violet) for Invest (Subtle) */
 .balance-row.type-invest.active {
-  background: rgba(234, 179, 8, 0.15);
-  border-left: 3px solid #eab308;
+  background: var(--violet-bg-active);
+  /* Solarized Violet tint */
+  border-left: 3px solid var(--violet);
 }
 
 .balance-row.type-invest.recurring {
-  background: rgba(234, 179, 8, 0.08);
+  background: var(--violet-bg-subtle);
 }
 
 /* Text Colors for Amount */
 .balance-row.type-income .bal-amt {
-  color: #22c55e;
+  color: var(--cyan);
   font-weight: 700;
 }
 
 .balance-row.type-expense .bal-amt {
-  color: #ef4444;
+  color: var(--magenta);
   font-weight: 600;
 }
 
 .balance-row.type-invest .bal-amt {
-  color: #eab308;
+  color: var(--violet);
   font-weight: 700;
 }
 
 /* Hover effects */
 .balance-row.type-income:hover {
-  background: rgba(16, 185, 129, 0.5);
+  background: var(--cyan-bg-hover);
+  /* Solarized Cyan */
 }
 
 .balance-row.type-expense:hover {
-  background: rgba(239, 68, 68, 0.5);
+  background: var(--magenta-bg-hover);
+  /* Solarized Magenta */
 }
 
 .balance-row.type-invest:hover {
-  background: rgba(234, 179, 8, 0.5);
+  background: var(--violet-bg-hover);
+  /* Solarized Violet */
 }
 
 /* Sync Button Styles */
@@ -804,7 +859,7 @@ input[type=number] {
   background: none;
   border: none;
   cursor: pointer;
-  color: #666;
+  color: var(--text-muted);
   /* Muted */
   opacity: 0;
   transition: opacity 0.2s ease, color 0.2s ease;
@@ -821,21 +876,19 @@ input[type=number] {
 
 .dc-sync-btn:hover {
   opacity: 1 !important;
-  color: #fff;
+  color: var(--text-primary);
   /* Brighter on direct hover */
 }
 
 /* Make Sync Button Always Visible (Muted) */
 .dc-sync-btn {
   opacity: 0.3 !important;
-  /* Always visible but faint */
-  color: #999;
+  color: var(--text-muted);
 }
 
 .dc-sync-btn:hover {
   opacity: 1 !important;
-  color: #4caf50;
-  /* Green on hover */
+  color: var(--success-color);
   transform: scale(1.1);
 }
 
@@ -846,7 +899,7 @@ input[type=number] {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: var(--overlay-bg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -854,22 +907,23 @@ input[type=number] {
 }
 
 .pwd-dialog-content {
-  background: #1e1e1e;
-  padding: 2rem;
-  border-radius: 8px;
-  width: 320px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-  border: 1px solid #333;
+  background: var(--card-bg);
+  padding: 24px;
+  border-radius: var(--radius-md);
+  width: 90%;
+  max-width: 400px;
+  box-shadow: var(--card-shadow);
+  border: 1px solid var(--card-border);
 }
 
 .pwd-title {
   margin: 0 0 0.5rem 0;
-  color: #fff;
+  color: var(--text-primary);
   font-size: 1.25rem;
 }
 
 .pwd-desc {
-  color: #888;
+  color: var(--text-secondary);
   margin-bottom: 1.5rem;
   font-size: 0.9rem;
   line-height: 1.4;
@@ -877,10 +931,10 @@ input[type=number] {
 
 .pwd-input {
   width: 100%;
-  background: #2a2a2a;
-  border: 1px solid #444;
+  background: var(--bg-primary);
+  border: 1px solid var(--card-border);
   padding: 0.75rem;
-  color: #fff;
+  color: var(--text-primary);
   border-radius: 4px;
   margin-bottom: 1.5rem;
   font-size: 1rem;
@@ -888,7 +942,7 @@ input[type=number] {
 }
 
 .pwd-input:focus {
-  border-color: #4caf50;
+  border-color: var(--accent-color);
 }
 
 .pwd-actions {
@@ -907,12 +961,12 @@ input[type=number] {
 
 .pwd-btn.cancel {
   background: transparent;
-  color: #888;
+  color: var(--text-secondary);
 }
 
 .pwd-btn.confirm {
-  background: #4caf50;
-  color: white;
+  background: var(--accent-color);
+  color: var(--bg-primary);
 }
 
 .pwd-btn:hover {
@@ -942,21 +996,37 @@ input[type=number] {
   text-align: center;
 }
 
+.sidebar-summary {
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--card-border);
+  padding: 24px;
+}
+
+.sidebar-summary-item {
+  margin-bottom: 16px;
+}
+
 .sidebar-balance-label {
-  font-size: 10px;
+  font-size: 12px;
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  margin-bottom: 8px;
-  font-weight: 600;
+  margin-bottom: 4px;
 }
 
 .sidebar-balance-value {
   font-family: var(--font-mono);
   font-size: 20px;
   font-weight: 700;
-  color: var(--accent-color);
-  text-shadow: 0 0 10px var(--accent-glow);
+  color: var(--text-primary);
+}
+
+.sidebar-balance-value.positive {
+  color: var(--success-color);
+}
+
+.sidebar-balance-value.negative {
+  color: var(--danger-color);
 }
 
 /* Adjust main content - fill remaining space */
@@ -997,13 +1067,12 @@ input[type=number] {
 }
 
 .toggle-empty-btn:hover {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: var(--accent-color);
+  background: var(--bg-secondary);
 }
 
 /* Negative Amount (Refund) - Green */
 .bal-amt.negative-refund {
-  color: #4ade80 !important;
+  color: var(--success-color) !important;
 }
 
 /* --- Annual Dashboard Styles --- */
@@ -1030,7 +1099,8 @@ input[type=number] {
   font-size: 32px;
   font-weight: 800;
   margin: 0;
-  background: linear-gradient(to right, #38bdf8, #818cf8);
+  background: linear-gradient(to right, var(--accent-color), #2aa198);
+  /* Solarized blue to cyan */
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -1061,8 +1131,8 @@ input[type=number] {
 }
 
 .chart-card.glow {
-  box-shadow: 0 0 20px rgba(59, 130, 246, 0.05);
-  border-color: rgba(59, 130, 246, 0.2);
+  box-shadow: 0 0 20px var(--bg-primary);
+  border-color: var(--base01);
 }
 
 .card-head {
@@ -1085,8 +1155,8 @@ input[type=number] {
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: var(--text-secondary);
-  background: rgba(255, 255, 255, 0.05);
-  padding: 4px 8px;
+  background: var(--bg-primary);
+  padding: 16px 24px;
   border-radius: 4px;
 }
 
@@ -1113,11 +1183,10 @@ input[type=number] {
     padding: 0;
     padding-bottom: env(safe-area-inset-bottom, 0px);
     justify-content: space-evenly;
-    /* Distribute all children evenly */
     align-items: center;
-    box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1);
-    background: rgba(30, 41, 59, 0.98);
-    backdrop-filter: blur(10px);
+    box-shadow: 0 -4px 6px -1px var(--bg-primary);
+    background: var(--bg-primary);
+    /* Solid background, no transparency */
     z-index: 1000;
   }
 

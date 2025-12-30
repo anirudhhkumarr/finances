@@ -20,9 +20,9 @@ const YearlyFinancialsChart = ({ data }) => {
                         step="1"
                         value={breakdownMode}
                         onChange={(e) => setBreakdownMode(Number(e.target.value))}
-                        style={{ width: '100%', accentColor: '#3b82f6' }}
+                        style={{ width: '100%', accentColor: '#268bd2' }}
                     />
-                    <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', fontSize: '10px', color: '#64748b' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', fontSize: '10px', color: '#586e75' }}>
                         <span>All</span>
                         <span>Exp</span>
                     </div>
@@ -36,7 +36,7 @@ const YearlyFinancialsChart = ({ data }) => {
                         {
                             label: 'Tax',
                             data: data.metrics.map(d => d.tax),
-                            backgroundColor: '#eab308',
+                            backgroundColor: '#b58900',
                             borderRadius: 2,
                             stack: 'stack0',
                             yAxisID: 'y',
@@ -44,9 +44,9 @@ const YearlyFinancialsChart = ({ data }) => {
                         },
                         // Savings Detailed
                         ...([
-                            { k: 'savings401k', l: '401k', c: '#34d399' },
-                            { k: 'savingsStock', l: 'Stock', c: '#059669' },
-                            { k: 'cashFlow', l: 'Cash Flow', c: '#6ee7b7' }
+                            { k: 'savings401k', l: '401k', c: '#6c71c4' },     // Violet
+                            { k: 'savingsStock', l: 'Stock', c: '#2aa198' },   // Cyan
+                            { k: 'cashFlow', l: 'Cash Flow', c: '#859900' }    // Green
                         ].map(i => ({
                             label: i.l,
                             data: data.metrics.map(d => d[i.k]),
@@ -60,7 +60,7 @@ const YearlyFinancialsChart = ({ data }) => {
                         ...(['rent', 'car', 'cards', 'other'].map(cat => ({
                             label: formatLabel(cat),
                             data: data.metrics.map(d => d.catTotals[cat]),
-                            backgroundColor: catColors[cat] || '#64748b',
+                            backgroundColor: catColors[cat] || '#586e75',
                             borderRadius: 1,
                             stack: 'stack0',
                             yAxisID: 'y',
@@ -72,13 +72,13 @@ const YearlyFinancialsChart = ({ data }) => {
                     scales: {
                         x: {
                             stacked: true,
-                            grid: { color: '#334155', tickLength: 0 },
-                            ticks: { color: '#94a3b8', font: { size: 11, weight: 600 } }
+                            grid: { color: '#073642', tickLength: 0 },
+                            ticks: { color: '#839496', font: { size: 11, weight: 600 } }
                         },
                         y: {
                             stacked: true,
-                            grid: { color: '#334155', borderDash: [5, 5] },
-                            ticks: { color: '#64748b' },
+                            grid: { color: '#073642', borderDash: [5, 5] },
+                            ticks: { color: '#839496' },
                             position: 'left',
                             min: 0
                         }

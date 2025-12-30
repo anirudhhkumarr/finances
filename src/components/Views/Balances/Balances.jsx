@@ -226,11 +226,7 @@ const Balances = () => {
 
     return (
         <div className="balances-layout">
-            {/* Left Sidebar for Current Balance */}
-            <aside className="balances-sidebar">
-                <div className="sidebar-balance-label">Current<br />Balance</div>
-                <div className="sidebar-balance-value">{currentBalance.toLocaleString()}</div>
-            </aside>
+            {/* Sidebar Removed as per User Request */}
 
             {/* Main Content */}
             <div id="balances-year-stack" ref={containerRef}>

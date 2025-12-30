@@ -44,18 +44,15 @@ export const FinanceProvider = ({ children }) => {
             onConfirm: async (password) => {
                 setPasswordRequest(null);
                 try {
-                    let payload, filename;
+                    let payload;
                     if (!password) {
                         payload = JSON.stringify(appData, null, 2);
-                        filename = `finance_backup_${new Date().toISOString().slice(0, 10)}.json`;
                     } else {
                         const encrypted = await encryptBackup(appData, password);
                         payload = JSON.stringify(encrypted);
-                        filename = `finance_backup_SECURE_${new Date().toISOString().slice(0, 10)}.json`;
                     }
 
-
-
+                    let filename = `finance_backup.json`;
                     // Fallback: Standard Download Link
                     const blob = new Blob([payload], { type: "application/octet-stream" });
                     const url = URL.createObjectURL(blob);

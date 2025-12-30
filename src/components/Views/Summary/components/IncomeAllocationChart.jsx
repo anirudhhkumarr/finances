@@ -12,7 +12,7 @@ const IncomeAllocationChart = ({ data }) => {
                 <button
                     className="badge"
                     onClick={() => setIsAllocationStacked(!isAllocationStacked)}
-                    style={{ background: isAllocationStacked ? 'rgba(59, 130, 246, 0.2)' : 'rgba(255,255,255,0.05)', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.1)' }}
+                    style={{ background: isAllocationStacked ? 'rgba(38, 139, 210, 0.2)' : 'rgba(253, 246, 227, 0.05)', cursor: 'pointer', border: '1px solid rgba(253, 246, 227, 0.1)' }}
                 >
                     {isAllocationStacked ? 'Stacked View' : 'Line View'}
                 </button>
@@ -24,10 +24,10 @@ const IncomeAllocationChart = ({ data }) => {
                         {
                             label: 'Savings Rate',
                             data: data.metrics.map(d => d.savingsRate),
-                            borderColor: '#10b981', // Green
-                            backgroundColor: isAllocationStacked ? 'rgba(16, 185, 129, 0.6)' : 'rgba(16, 185, 129, 0.1)',
+                            borderColor: '#2aa198', // Cyan
+                            backgroundColor: isAllocationStacked ? 'rgba(42, 161, 152, 0.6)' : 'rgba(42, 161, 152, 0.1)',
                             borderWidth: isAllocationStacked ? 0 : 3,
-                            pointBackgroundColor: '#10b981',
+                            pointBackgroundColor: '#2aa198',
                             pointRadius: isAllocationStacked ? 0 : 4,
                             fill: isAllocationStacked,
                             tension: 0.3
@@ -35,10 +35,10 @@ const IncomeAllocationChart = ({ data }) => {
                         {
                             label: 'Tax Rate',
                             data: data.metrics.map(d => d.taxRate),
-                            borderColor: '#eab308', // Yellow (Gold)
-                            backgroundColor: isAllocationStacked ? 'rgba(234, 179, 8, 0.6)' : 'rgba(234, 179, 8, 0.1)',
+                            borderColor: '#b58900', // Yellow
+                            backgroundColor: isAllocationStacked ? 'rgba(181, 137, 0, 0.6)' : 'rgba(181, 137, 0, 0.1)',
                             borderWidth: isAllocationStacked ? 0 : 2,
-                            pointBackgroundColor: '#eab308',
+                            pointBackgroundColor: '#b58900',
                             pointRadius: isAllocationStacked ? 0 : 3,
                             fill: isAllocationStacked,
                             tension: 0.3
@@ -46,10 +46,10 @@ const IncomeAllocationChart = ({ data }) => {
                         {
                             label: 'Expense Rate',
                             data: data.metrics.map(d => d.expenseRate),
-                            borderColor: '#ef4444', // Red
-                            backgroundColor: isAllocationStacked ? 'rgba(239, 68, 68, 0.6)' : 'rgba(239, 68, 68, 0.1)',
+                            borderColor: '#d33682', // Magenta
+                            backgroundColor: isAllocationStacked ? 'rgba(211, 54, 130, 0.6)' : 'rgba(211, 54, 130, 0.1)',
                             borderWidth: isAllocationStacked ? 0 : 2,
-                            pointBackgroundColor: '#ef4444',
+                            pointBackgroundColor: '#d33682',
                             pointRadius: isAllocationStacked ? 0 : 3,
                             fill: isAllocationStacked,
                             tension: 0.3

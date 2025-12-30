@@ -67,19 +67,35 @@ const AnnualAnalytics = () => {
                 </div>
             </div>
 
-            <div className="grid-layout">
-                {/* 1. Sankey Flow (Latest Year) - Full Width */}
-                <IncomeFlowChart data={annualData} />
+            {annualData.years.length === 0 ? (
+                <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    height: '400px',
+                    color: '#94a3b8',
+                    gap: '16px'
+                }}>
+                    <div style={{ fontSize: '48px', opacity: 0.5 }}>📊</div>
+                    <h3>No Data Available</h3>
+                    <p>Enter some income and expenses in the Balances tab to generate reports.</p>
+                </div>
+            ) : (
+                <div className="grid-layout">
+                    {/* 1. Sankey Flow (Latest Year) - Full Width */}
+                    <IncomeFlowChart data={annualData} />
 
-                {/* 2. The Annual Ledger (Detailed Stack) */}
-                <YearlyFinancialsChart data={annualData} />
+                    {/* 2. The Annual Ledger (Detailed Stack) */}
+                    <YearlyFinancialsChart data={annualData} />
 
-                {/* 3. Income Allocation Trends (Line) */}
-                <IncomeAllocationChart data={annualData} />
+                    {/* 3. Income Allocation Trends (Line) */}
+                    <IncomeAllocationChart data={annualData} />
 
-                {/* 4. Category Growth Trends (Dedicated Line Chart) */}
-                <CategoryGrowthChart data={annualData} />
-            </div>
+                    {/* 4. Category Growth Trends (Dedicated Line Chart) */}
+                    <CategoryGrowthChart data={annualData} />
+                </div>
+            )}
         </div>
     );
 };

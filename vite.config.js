@@ -5,7 +5,7 @@ import { viteSingleFile } from 'vite-plugin-singlefile'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), viteSingleFile()],
-  base: process.env.GITHUB_ACTIONS ? '/finances/' : './',
+  base: './',
   build: {
     minify: 'esbuild',
     cssMinify: true,

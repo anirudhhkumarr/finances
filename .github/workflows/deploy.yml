@@ -1,7 +1,9 @@
-name: Deploy to GitHub Pages
+name: Build & Deploy
 
 on:
   push:
+    branches: [ "main" ]
+  pull_request:
     branches: [ "main" ]
 
 permissions:
@@ -14,10 +16,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -44,5 +43,5 @@ jobs:
           path: './dist'
           
       - name: Deploy to GitHub Pages
-        id: deployment
+        if: github.ref == 'refs/heads/main'
         uses: actions/deploy-pages@v4

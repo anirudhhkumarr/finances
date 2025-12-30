@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
 import { useFinance } from '../../../contexts/FinanceContext';
 
 const MonthBlock = ({ data }) => {
@@ -131,7 +132,7 @@ const MonthBlock = ({ data }) => {
                     onClick={() => setHideEmpty(!hideEmpty)}
                     title={hideEmpty ? "Show empty days" : "Hide empty days"}
                 >
-                    {hideEmpty ? 'Show All' : 'Compact'}
+                    {hideEmpty ? <Eye size={16} /> : <EyeOff size={16} />}
                 </button>
             </div>
             <div className="month-grid seamless">

@@ -158,6 +158,7 @@ const MonthBlock = ({ data }) => {
 
                             <input
                                 type="text"
+                                inputMode="decimal"
                                 className={`bal-amt ${isNegativeAmount ? 'negative-refund' : ''}`}
                                 placeholder=""
                                 defaultValue={row.txn?.amount || ''}

@@ -1254,7 +1254,10 @@ input[type=number] {
     box-sizing: border-box;
     gap: 0;
     padding: 12px 12px;
-    /* Balanced horizontal padding */
+  }
+
+  .balance-row:hover {
+    background: transparent;
   }
 
   .balance-row.header {

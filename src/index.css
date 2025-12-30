@@ -1184,7 +1184,7 @@ input[type=number] {
 }
 
 /* --- Mobile Responsiveness --- */
-@media (max-width: 1024px) {
+@media (max-width: 1100px) {
 
   /* Prevent horizontal overflow on body */
   body,

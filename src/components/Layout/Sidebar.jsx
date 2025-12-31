@@ -1,6 +1,6 @@
 import React from 'react';
 import { Wallet, BarChart3, Grip, Download, Upload } from 'lucide-react';
-import { useFinance } from '../../contexts/FinanceContext';
+import { useFinance } from '../../hooks/useFinance';
 
 const Sidebar = ({ activeTab, onTabChange }) => {
     const { exportData, importData } = useFinance();

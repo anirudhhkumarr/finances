@@ -1,13 +1,6 @@
 import { CategoryMap } from './categoryConfig';
 
 export const generateMonthRecord = (monthId, prevRecord = null, transactions = [], currentRecord = null) => {
-    // 1. Base: Prefer Current Record (Manual), then Previous (Carry-over), then Default
-    let lastValues = {
-        income: { gross: 0, gross_expr: null, net: 0, net_expr: null, other: 0, other_expr: null, tax: 0, tax_expr: null },
-        savings: { '401k': 0, '401k_expr': null },
-        expenses: { rent: 0, rent_expr: null }
-    };
-
     // Helper to pick best value
     const pick = (group, field) => {
         // Current Record (if exists and valid)

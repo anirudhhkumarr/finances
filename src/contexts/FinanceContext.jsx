@@ -1,9 +1,8 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { fillDataGaps, generateMonthRecord } from '../utils/dataGapFiller';
 import { CategoryMap } from '../utils/categoryConfig';
 import { encryptBackup, decryptBackup } from '../utils/crypto';
-
-const FinanceContext = createContext();
+import { FinanceContext } from './context';
 
 const DATA_KEY = 'financeAppData';
 
@@ -93,7 +92,7 @@ export const FinanceProvider = ({ children }) => {
                                 } else {
                                     alert("Invalid Backup Structure");
                                 }
-                            } catch (err) {
+                            } catch {
                                 alert("Failed: Incorrect Password or File Corrupt");
                             }
                         },
@@ -232,8 +231,8 @@ export const FinanceProvider = ({ children }) => {
                 const other = parseFloat(record.income.other) || 0;
                 const k401 = parseFloat(record.savings['401k']) || 0;
 
-                // Derived Tax: Gross - 401k - Net
-                const derivedTax = gross - k401 - net;
+                // Derived Tax: (Gross + Other) - 401k - Net
+                const derivedTax = (gross + other) - k401 - net;
 
                 record.income.tax = derivedTax;
             }
@@ -300,6 +299,4 @@ export const FinanceProvider = ({ children }) => {
         </FinanceContext.Provider>
     );
 };
-
-export const useFinance = () => useContext(FinanceContext);
 

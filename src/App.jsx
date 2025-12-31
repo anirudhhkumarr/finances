@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Sidebar from './components/Layout/Sidebar';
 import Balances from './components/Views/Balances/Balances';
 import Summary from './components/Views/Summary/Summary';
 import DataEntry from './components/Views/DataEntry/DataEntry';
 import PasswordDialog from './components/Common/PasswordDialog';
 import ErrorBoundary from './components/Common/ErrorBoundary';
-import { useFinance } from './contexts/FinanceContext';
+import { useFinance } from './hooks/useFinance';
 
 function App() {
   const { passwordRequest } = useFinance();

@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useFinance } from '../../../../contexts/FinanceContext';
+import { useFinance } from '../../../../hooks/useFinance';
 
 export const useAnnualData = (selectedYear) => {
     const { appData } = useFinance();

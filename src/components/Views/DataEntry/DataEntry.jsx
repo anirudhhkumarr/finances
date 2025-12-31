@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { useFinance } from '../../../contexts/FinanceContext';
+import { useFinance } from '../../../hooks/useFinance';
 import { evaluateExpression } from '../../../utils/math';
 
 // Icons
@@ -254,7 +254,7 @@ const DataEntry = () => {
                                 <th className="dc-th">Gross Salary</th>
                                 <th className="dc-th">Tax</th>
                                 <th className="dc-th">Net Salary</th>
-                                <th className="dc-th">Other Inc</th>
+                                <th className="dc-th">Other</th>
                             </>
                         ) : <th className="dc-th">Total</th>}
 
@@ -269,11 +269,11 @@ const DataEntry = () => {
                             <>
                                 <th className="dc-th">Rent</th>
                                 <th className="dc-th">Car</th>
-                                <th className="dc-th">Disc</th>
+                                <th className="dc-th">Discover</th>
                                 <th className="dc-th">Amex</th>
-                                <th className="dc-th">USB</th>
+                                <th className="dc-th">US Bank</th>
                                 <th className="dc-th">Chase</th>
-                                <th className="dc-th">Other Exp</th>
+                                <th className="dc-th">Other</th>
                             </>
                         ) : <th className="dc-th">Total</th>}
                     </tr>

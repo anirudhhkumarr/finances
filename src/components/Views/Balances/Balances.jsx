@@ -1,18 +1,10 @@
-import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
-import { useFinance } from '../../../contexts/FinanceContext';
+import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import { useFinance } from '../../../hooks/useFinance';
 import MonthBlock from './MonthBlock';
 
 const Balances = () => {
     const { appData } = useFinance();
-    const [months, setMonths] = useState([]);
-
-    // Refs for Infinite Scroll
-    const bottomSentinelRef = useRef(null);
-    const containerRef = useRef(null);
-    const [isLoading, setIsLoading] = useState(false);
-
-    // Initial Load Logic
-    useEffect(() => {
+    const [months, setMonths] = useState(() => {
         const now = new Date();
         // If > 25th, start next month, else current
         if (now.getDate() > 25) {
@@ -25,12 +17,16 @@ const Balances = () => {
         const prevDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
         const prev = { year: prevDate.getFullYear(), month: prevDate.getMonth() };
 
-        // Load Initial Month (Focus - Newest month first, then previous)
-        setMonths([current, prev]);
-    }, []);
+        return [current, prev];
+    });
+
+    // Refs for Infinite Scroll
+    const bottomSentinelRef = useRef(null);
+    const containerRef = useRef(null);
+    const [isLoading, setIsLoading] = useState(false);
 
     // Load Previous Month (History) -> Appended to Bottom
-    const loadHistory = () => {
+    const loadHistory = useCallback(() => {
         if (isLoading) return;
 
         setIsLoading(true);
@@ -49,7 +45,7 @@ const Balances = () => {
             });
             setIsLoading(false);
         }, 10);
-    };
+    }, [isLoading]);
 
     // Intersection Observer Setup (Bottom Only)
     useEffect(() => {
@@ -76,17 +72,16 @@ const Balances = () => {
         if (bottomSentinelRef.current) observer.observe(bottomSentinelRef.current);
 
         return () => observer.disconnect();
-    }, [months, isLoading]); // Re-bind on months change (new refs potentially, though refs are stable, effect runs)
+    }, [isLoading, loadHistory, months]); // Re-bind on months change (new refs potentially, though refs are stable, effect runs)
 
     // Calculate Data for Rendered Months
-    const renderedData = React.useMemo(() => {
+    const renderedData = useMemo(() => {
         if (months.length === 0) return [];
 
         // Build Data for each month.
         return months.map(m => {
             const date = new Date(m.year, m.month, 1);
             const monthId = date.toISOString().slice(0, 7);
-            const nextMonthId = new Date(m.year, m.month + 1, 1).toISOString().slice(0, 7);
 
             // Calculate Start Balance logic with Overrides
             // 1. Find latest override < this month
@@ -129,10 +124,7 @@ const Balances = () => {
             // If there's an override IN this month, simply adding netChange is wrong.
             // But checking overrides within the month is O(D) ~ 30.
 
-            // Refined EndBal Logic:
             // Find latest override <= End of Month.
-            const monthEndDate = `${nextMonthId}-01`; // First day of next month (exclusive)
-            const lastOverrideInMonth = overrideDates.find(d => d >= monthStartDate && d < monthEndDate); // Re-sorted? We reversed above.
             // Actually we reversed above. Let's operate generically.
 
             // Simplification: We only really pass 'startBal' to MonthBlock. 

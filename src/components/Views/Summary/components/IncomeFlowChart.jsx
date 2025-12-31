@@ -2,26 +2,26 @@ import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 import { sankey as d3Sankey, sankeyLinkHorizontal } from 'd3-sankey';
 
+const colorMap = {
+    'Gross Income': '#268bd2',
+    'Net Income': '#2aa198',
+    'Tax': '#b58900',
+    'Total Savings': '#6c71c4',
+    '401k': '#6c71c4',
+    'Stock': '#2aa198',
+    'Cash': '#268bd2',
+    'Expenses': '#d33682',
+    'Rent': '#d33682',
+    'Car': '#de5599',
+    'Cards': '#a92b61',
+    'Other': '#e37dae',
+    'cards': '#a92b61',
+};
+
 const IncomeFlowChart = ({ data, selectedYear, setSelectedYear, yearOptions }) => {
     const svgRef = useRef(null);
     const containerRef = useRef(null);
     const [dimensions, setDimensions] = useState({ width: 1000, height: 450 });
-
-    const colorMap = {
-        'Gross Income': '#268bd2',
-        'Net Income': '#2aa198',
-        'Tax': '#b58900',
-        'Total Savings': '#6c71c4',
-        '401k': '#6c71c4',
-        'Stock': '#2aa198',
-        'Cash': '#268bd2',
-        'Expenses': '#d33682',
-        'Rent': '#d33682',
-        'Car': '#de5599',
-        'Cards': '#a92b61',
-        'Other': '#e37dae',
-        'cards': '#a92b61',
-    };
 
     // Responsive Logic
     useEffect(() => {

@@ -1,19 +1,19 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import * as d3 from 'd3';
 
+const colors = {
+    'Savings Rate': '#2aa198',
+    'Tax Rate': '#b58900',
+    'Expense Rate': '#d33682'
+};
+
+const keys = ['Savings Rate', 'Tax Rate', 'Expense Rate'];
+
 const IncomeAllocationChart = ({ data }) => {
     const [isAllocationStacked, setIsAllocationStacked] = useState(false);
     const svgRef = useRef(null);
     const containerRef = useRef(null);
     const [dimensions, setDimensions] = useState({ width: 800, height: 450 });
-
-    const colors = {
-        'Savings Rate': '#2aa198',
-        'Tax Rate': '#b58900',
-        'Expense Rate': '#d33682'
-    };
-
-    const keys = ['Savings Rate', 'Tax Rate', 'Expense Rate'];
 
     useEffect(() => {
         if (!containerRef.current) return;
@@ -52,7 +52,10 @@ const IncomeAllocationChart = ({ data }) => {
             .range([margin.left, width - margin.right]);
 
         const y = d3.scaleLinear()
-            .domain([0, isAllocationStacked ? 100 : d3.max(formattedData, d => d3.max(keys, k => d[k])) * 1.1])
+            .domain([
+                isAllocationStacked ? 0 : (d3.min(formattedData, d => d3.min(keys, k => d[k])) || 0) * 0.9,
+                isAllocationStacked ? 100 : (d3.max(formattedData, d => d3.max(keys, k => d[k])) || 100) * 1.1
+            ])
             .nice()
             .range([height - margin.bottom, margin.top]);
 
@@ -152,7 +155,7 @@ const IncomeAllocationChart = ({ data }) => {
                 .style('font-family', 'Outfit, sans-serif');
         });
 
-    }, [formattedData, isAllocationStacked, dimensions]);
+    }, [formattedData, isAllocationStacked, dimensions, data.years]);
 
     return (
         <div className="chart-card">

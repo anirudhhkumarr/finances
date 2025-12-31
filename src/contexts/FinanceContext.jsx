@@ -1,9 +1,8 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { fillDataGaps, generateMonthRecord } from '../utils/dataGapFiller';
 import { CategoryMap } from '../utils/categoryConfig';
 import { encryptBackup, decryptBackup } from '../utils/crypto';
-
-const FinanceContext = createContext();
+import { FinanceContext } from './context';
 
 const DATA_KEY = 'financeAppData';
 
@@ -53,15 +52,18 @@ export const FinanceProvider = ({ children }) => {
                     }
 
                     let filename = `finance_backup.json`;
-                    // Fallback: Standard Download Link
                     const blob = new Blob([payload], { type: "application/octet-stream" });
                     const url = URL.createObjectURL(blob);
+                    
                     const link = document.createElement("a");
                     link.href = url;
                     link.download = filename;
                     document.body.appendChild(link);
                     link.click();
-                    document.body.removeChild(link);
+                    setTimeout(() => {
+                        document.body.removeChild(link);
+                        URL.revokeObjectURL(url);
+                    }, 100);
                 } catch (e) {
                     alert("Export Failed: " + e.message);
                 }
@@ -93,7 +95,7 @@ export const FinanceProvider = ({ children }) => {
                                 } else {
                                     alert("Invalid Backup Structure");
                                 }
-                            } catch (err) {
+                            } catch {
                                 alert("Failed: Incorrect Password or File Corrupt");
                             }
                         },
@@ -131,6 +133,7 @@ export const FinanceProvider = ({ children }) => {
                 const newTxn = {
                     id: Date.now().toString(),
                     date: dateStr,
+                    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Los_Angeles',
                     category: overrides.category || '',
                     amount: 0
                 };
@@ -189,9 +192,11 @@ export const FinanceProvider = ({ children }) => {
             // Value Logic
             if (value === '' || value === null) {
                 // Clear: Revert to System Calculation (Copy + Transactions)
-                const prevMonthDate = new Date(recordId + '-15'); // Middle of month safe
-                prevMonthDate.setMonth(prevMonthDate.getMonth() - 1);
-                const prevId = prevMonthDate.toISOString().slice(0, 7);
+                const [y, m] = recordId.split('-').map(Number);
+                let prevY = y;
+                let prevM = m - 1;
+                if (prevM === 0) { prevM = 12; prevY -= 1; }
+                const prevId = `${prevY}-${String(prevM).padStart(2, '0')}`;
                 const prevRecord = nextRecords.find(r => r.id === prevId);
 
                 // Generate system prediction
@@ -232,8 +237,8 @@ export const FinanceProvider = ({ children }) => {
                 const other = parseFloat(record.income.other) || 0;
                 const k401 = parseFloat(record.savings['401k']) || 0;
 
-                // Derived Tax: Gross - 401k - Net
-                const derivedTax = gross - k401 - net;
+                // Derived Tax: (Gross + Other) - 401k - Net
+                const derivedTax = (gross + other) - k401 - net;
 
                 record.income.tax = derivedTax;
             }
@@ -248,9 +253,11 @@ export const FinanceProvider = ({ children }) => {
         const recordIdx = nextRecords.findIndex(r => r.id === monthId);
 
         // Find Previous Record for "Copy" Context
-        const prevMonthDate = new Date(monthId + '-15');
-        prevMonthDate.setMonth(prevMonthDate.getMonth() - 1);
-        const prevId = prevMonthDate.toISOString().slice(0, 7);
+        const [y, m] = monthId.split('-').map(Number);
+        let prevY = y;
+        let prevM = m - 1;
+        if (prevM === 0) { prevM = 12; prevY -= 1; }
+        const prevId = `${prevY}-${String(prevM).padStart(2, '0')}`;
         const prevRecord = nextRecords.find(r => r.id === prevId);
 
         // Regenerate the record using system logic (preferring current values over previous)
@@ -300,6 +307,4 @@ export const FinanceProvider = ({ children }) => {
         </FinanceContext.Provider>
     );
 };
-
-export const useFinance = () => useContext(FinanceContext);
 

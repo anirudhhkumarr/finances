@@ -83,15 +83,15 @@
   --radius-md: 12px;
 }
 
-body {
+body, html {
   background-color: var(--bg-primary);
   color: var(--text-primary);
   font-family: var(--font-body);
   margin: 0;
   padding: 0;
-  min-height: 100vh;
+  height: 100%;
+  overflow: hidden; /* Fix double-frame scroll */
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
 }
 
 /* -- Minimal Left Sidebar -- */
@@ -162,10 +162,12 @@ body {
 .main-content {
   margin-left: 72px;
   padding: 0;
-  /* Full bleed for data entry */
-  height: 100vh;
+  height: 100dvh; /* Dynamic viewport height for mobile Safari */
+  overflow-y: auto; /* Main scroller */
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* -- Balances View -- */
@@ -378,10 +380,9 @@ body {
 
 /* --- DATA ENTRY TABLE (Cleaned) --- */
 .data-entry-wrapper {
-  height: 100vh;
-  overflow: auto;
+  width: 100%;
+  overflow-x: auto; /* Only scroll horizontally if needed */
   background: var(--bg-primary);
-  /* Dark Theme */
 }
 
 .dc-table {

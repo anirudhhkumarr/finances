@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
-import { useFinance } from '../../../contexts/FinanceContext';
+import { useFinance } from '../../../hooks/useFinance';
 
 const MonthBlock = ({ data }) => {
     const { appData, saveTransaction, setBalanceOverride } = useFinance();
@@ -58,7 +58,7 @@ const MonthBlock = ({ data }) => {
         }
 
         if (dayTxns.length > 0) {
-            dayTxns.forEach((txn, idx) => {
+            dayTxns.forEach((txn) => {
                 chronologicalRows.push({
                     dateStr,
                     dayNum: d,
@@ -98,7 +98,7 @@ const MonthBlock = ({ data }) => {
         saveTransaction(dateStr, id, field, val, { category: autoCategory });
     };
 
-    const handleBalanceBlur = (dateStr, val, currentBalance, autoBal, isCurrentlyOverride) => {
+    const handleBalanceBlur = (dateStr, val, currentBalance, autoBal) => {
         const inputVal = val.trim();
 
         // 1. If empty, clear the override

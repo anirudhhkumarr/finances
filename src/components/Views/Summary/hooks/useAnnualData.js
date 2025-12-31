@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useFinance } from '../../../../contexts/FinanceContext';
+import { useFinance } from '../../../../hooks/useFinance';
 
 export const useAnnualData = (selectedYear) => {
     const { appData } = useFinance();
@@ -81,9 +81,18 @@ export const useAnnualData = (selectedYear) => {
         });
 
         // Add Growth (2nd Pass)
+        const currentMonthNum = now.getMonth() + 1;
+
         const annualMetrics = baseMetrics.map((item, index) => {
             const prev = baseMetrics[index - 1];
-            const safeGrowth = (curr, old) => old > 0 ? ((curr - old) / old) * 100 : 0;
+            const isCurrentYear = item.year === currentYearStr;
+            const runRateFactor = isCurrentYear ? (12 / currentMonthNum) : 1;
+
+            const safeGrowth = (curr, old) => {
+                if (!(old > 0)) return 0;
+                const annualizedCurr = curr * runRateFactor;
+                return ((annualizedCurr - old) / old) * 100;
+            };
 
             const nonRent = item.expense - (item.catTotals.rent || 0);
             const prevNonRent = prev ? (prev.expense - (prev.catTotals.rent || 0)) : 0;

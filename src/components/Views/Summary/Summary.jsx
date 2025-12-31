@@ -33,17 +33,11 @@ ChartJS.register(
 );
 
 const AnnualAnalytics = () => {
-    const [selectedYear, setSelectedYear] = useState('2025');
+    const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
     const annualData = useAnnualData(selectedYear);
 
     // Slider Setup
     const sliderOptions = [...annualData.years, 'All'];
-    const sliderIndex = sliderOptions.indexOf(selectedYear) === -1 ? sliderOptions.length - 1 : sliderOptions.indexOf(selectedYear);
-
-    const handleSliderChange = (e) => {
-        const idx = parseInt(e.target.value);
-        setSelectedYear(sliderOptions[idx]);
-    };
 
     return (
         <div className="annual-dashboard">

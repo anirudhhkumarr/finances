@@ -2,9 +2,27 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import * as d3 from 'd3';
 import { catColors, formatLabel } from './ChartConfig';
 
+const breakdownLabels = ['All', 'Tax', 'Savings', 'Expenses'];
+const keysMap = [
+    ['Tax', '401k', 'Stock', 'Cash Flow', 'Rent', 'Car', 'Cards', 'Other'],
+    ['Tax'],
+    ['401k', 'Stock', 'Cash Flow'],
+    ['Rent', 'Car', 'Cards', 'Other']
+];
+
+const colorMap = {
+    'Tax': '#b58900',
+    '401k': '#6c71c4',
+    'Stock': '#2aa198',
+    'Cash Flow': '#859900',
+    'Rent': catColors.rent,
+    'Car': catColors.car,
+    'Cards': catColors.cards,
+    'Other': catColors.other
+};
+
 const YearlyFinancialsChart = ({ data }) => {
     const [breakdownMode, setBreakdownMode] = useState(0);
-    const breakdownLabels = ['All', 'Tax', 'Savings', 'Expenses'];
     const svgRef = useRef(null);
     const containerRef = useRef(null);
     const [dimensions, setDimensions] = useState({ width: 800, height: 450 });
@@ -41,12 +59,6 @@ const YearlyFinancialsChart = ({ data }) => {
         });
     }, [data]);
 
-    const keysMap = [
-        ['Tax', '401k', 'Stock', 'Cash Flow', 'Rent', 'Car', 'Cards', 'Other'],
-        ['Tax'],
-        ['401k', 'Stock', 'Cash Flow'],
-        ['Rent', 'Car', 'Cards', 'Other']
-    ];
 
     useEffect(() => {
         if (!svgRef.current) return;
@@ -71,16 +83,6 @@ const YearlyFinancialsChart = ({ data }) => {
             .nice()
             .range([height - margin.bottom, margin.top]);
 
-        const colorMap = {
-            'Tax': '#b58900',
-            '401k': '#6c71c4',
-            'Stock': '#2aa198',
-            'Cash Flow': '#859900',
-            'Rent': catColors.rent,
-            'Car': catColors.car,
-            'Cards': catColors.cards,
-            'Other': catColors.other
-        };
 
         // Axes (Bigger Fonts)
         svg.append('g')
@@ -151,7 +153,7 @@ const YearlyFinancialsChart = ({ data }) => {
                 .style('font-family', 'Outfit, sans-serif');
         });
 
-    }, [stackedData, breakdownMode, dimensions]);
+    }, [stackedData, breakdownMode, dimensions, data.years]);
 
     return (
         <div className="chart-card">

@@ -1,18 +1,18 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import * as d3 from 'd3';
 
+const colors = {
+    'Net Income': '#268bd2',
+    'Savings': '#2aa198',
+    'Tax': '#b58900',
+    'Rent': '#d33682',
+    'Other Exp.': '#dc322f'
+};
+
 const CategoryGrowthChart = ({ data }) => {
     const svgRef = useRef(null);
     const containerRef = useRef(null);
     const [dimensions, setDimensions] = useState({ width: 800, height: 450 });
-
-    const colors = {
-        'Net Income': '#268bd2',
-        'Savings': '#2aa198',
-        'Tax': '#b58900',
-        'Rent': '#d33682',
-        'Other Exp.': '#dc322f'
-    };
 
     // Responsive Logic
     useEffect(() => {
@@ -56,8 +56,8 @@ const CategoryGrowthChart = ({ data }) => {
 
         const y = d3.scaleLinear()
             .domain([
-                d3.min(formattedData, d => d3.min(seriesNames, k => d[k])) * 1.1,
-                d3.max(formattedData, d => d3.max(seriesNames, k => d[k])) * 1.1
+                (d3.min(formattedData, d => d3.min(seriesNames, k => d[k])) || 0) * 1.1,
+                (d3.max(formattedData, d => d3.max(seriesNames, k => d[k])) || 100) * 1.1
             ])
             .nice()
             .range([height - margin.bottom, margin.top]);
@@ -140,7 +140,7 @@ const CategoryGrowthChart = ({ data }) => {
                 .style('font-family', 'Outfit, sans-serif');
         });
 
-    }, [formattedData, dimensions]);
+    }, [formattedData, dimensions, data.years]);
 
     return (
         <div className="chart-card">

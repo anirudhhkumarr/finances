@@ -1,5 +1,5 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { useFinance } from '../../../contexts/FinanceContext';
+import React, { useState, useMemo } from 'react';
+import { useFinance } from '../../../hooks/useFinance';
 import { evaluateExpression } from '../../../utils/math';
 
 const SpreadsheetCell = ({ recordId, group, field, value, formula, isReadOnly, onUpdate }) => {
@@ -8,9 +8,8 @@ const SpreadsheetCell = ({ recordId, group, field, value, formula, isReadOnly, o
 
     const displayValue = (value === undefined || value === null) ? '' : value.toLocaleString();
 
-    useEffect(() => {
-        if (!isEditing) setInputValue(formula || displayValue);
-    }, [value, formula, isEditing, displayValue]);
+    // Remove the useEffect that syncs input value when not editing.
+    // Instead, we derive the value in the render logic below.
 
     const handleFocus = () => {
         if (isReadOnly) return;
@@ -45,7 +44,7 @@ const SpreadsheetCell = ({ recordId, group, field, value, formula, isReadOnly, o
         <td>
             <input
                 className="cell-input"
-                value={isEditing ? inputValue : displayValue}
+                value={isEditing ? inputValue : (formula || displayValue)}
                 onChange={(e) => setInputValue(e.target.value)}
                 onFocus={handleFocus}
                 onBlur={handleBlur}

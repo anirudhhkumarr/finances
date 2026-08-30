@@ -1128,6 +1128,34 @@ input[type=number] {
   border-radius: 4px;
 }
 
+.year-dropdown {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--card-border);
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.year-dropdown:hover {
+  border-color: var(--accent-color);
+}
+
+.year-dropdown:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 8px var(--accent-glow);
+}
+
+.year-dropdown option {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
 /* --- Mobile Responsiveness --- */
 @media (max-width: 1100px) {
 

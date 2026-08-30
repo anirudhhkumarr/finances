@@ -44,16 +44,19 @@ const YearlyFinancialsChart = ({ data }) => {
         return data.years.map((year, i) => {
             const m = data.metrics[i];
             const d = { year };
+            if (!m) return d;
 
-            d.Tax = m.tax;
-            d['401k'] = m.savings401k;
-            d.Stock = m.savingsStock;
-            d['Cash Flow'] = m.cashFlow;
+            const factor = m.runRateFactor || 1;
 
-            d.Rent = m.catTotals.rent || 0;
-            d.Car = m.catTotals.car || 0;
-            d.Cards = m.catTotals.cards || 0;
-            d.Other = m.catTotals.other || 0;
+            d.Tax = (m.tax || 0) * factor;
+            d['401k'] = (m.savings401k || 0) * factor;
+            d.Stock = (m.savingsStock || 0) * factor;
+            d['Cash Flow'] = (m.cashFlow || 0) * factor;
+
+            d.Rent = (m.catTotals?.rent || 0) * factor;
+            d.Car = (m.catTotals?.car || 0) * factor;
+            d.Cards = (m.catTotals?.cards || 0) * factor;
+            d.Other = (m.catTotals?.other || 0) * factor;
 
             return d;
         });
@@ -67,6 +70,18 @@ const YearlyFinancialsChart = ({ data }) => {
         const svg = d3.select(svgRef.current);
         svg.selectAll('*').remove();
 
+        if (!data.years || data.years.length === 0) {
+            svg.append('text')
+                .attr('x', width / 2)
+                .attr('y', height / 2)
+                .attr('text-anchor', 'middle')
+                .attr('fill', '#839496')
+                .style('font-family', 'Outfit, sans-serif')
+                .style('font-size', '15px')
+                .text('No annual ledger data available');
+            return;
+        }
+
         const margin = { top: 20, right: 30, bottom: 120, left: 70 };
 
         const activeKeys = keysMap[breakdownMode];
@@ -77,9 +92,10 @@ const YearlyFinancialsChart = ({ data }) => {
             .range([margin.left, width - margin.right])
             .padding(0.3);
 
-        const yMax = d3.max(series, d => d3.max(d, d => d[1]));
+        const rawYMax = d3.max(series, d => d3.max(d, d => d[1]));
+        const safeYMax = (rawYMax !== undefined && !isNaN(rawYMax) && isFinite(rawYMax) && rawYMax > 0) ? rawYMax : 1000;
         const y = d3.scaleLinear()
-            .domain([0, yMax || 1])
+            .domain([0, safeYMax])
             .nice()
             .range([height - margin.bottom, margin.top]);
 
@@ -156,7 +172,7 @@ const YearlyFinancialsChart = ({ data }) => {
     }, [stackedData, breakdownMode, dimensions, data.years]);
 
     return (
-        <div className="chart-card">
+        <div className="chart-card wide glow">
             <div className="card-head">
                 <h3>Yearly Financials & Breakdown</h3>
                 <div className="view-selector" style={{ display: 'flex', gap: '8px' }}>

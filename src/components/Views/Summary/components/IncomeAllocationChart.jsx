@@ -45,17 +45,33 @@ const IncomeAllocationChart = ({ data }) => {
         const svg = d3.select(svgRef.current);
         svg.selectAll('*').remove();
 
+        if (!data.years || data.years.length === 0) {
+            svg.append('text')
+                .attr('x', width / 2)
+                .attr('y', height / 2)
+                .attr('text-anchor', 'middle')
+                .attr('fill', '#839496')
+                .style('font-family', 'Outfit, sans-serif')
+                .style('font-size', '15px')
+                .text('No income allocation data available');
+            return;
+        }
+
         const margin = { top: 20, right: 30, bottom: 100, left: 70 };
 
         const x = d3.scalePoint()
             .domain(data.years)
             .range([margin.left, width - margin.right]);
 
+        const rawMin = d3.min(formattedData, d => d3.min(keys, k => d[k]));
+        const rawMax = d3.max(formattedData, d => d3.max(keys, k => d[k]));
+        const safeMin = (rawMin !== undefined && !isNaN(rawMin) && isFinite(rawMin)) ? rawMin * 0.9 : 0;
+        const safeMax = (rawMax !== undefined && !isNaN(rawMax) && isFinite(rawMax)) ? rawMax * 1.1 : 100;
+        const yDomainMin = isAllocationStacked ? 0 : Math.min(0, safeMin);
+        const yDomainMax = isAllocationStacked ? 100 : Math.max(100, safeMax);
+
         const y = d3.scaleLinear()
-            .domain([
-                isAllocationStacked ? 0 : (d3.min(formattedData, d => d3.min(keys, k => d[k])) || 0) * 0.9,
-                isAllocationStacked ? 100 : (d3.max(formattedData, d => d3.max(keys, k => d[k])) || 100) * 1.1
-            ])
+            .domain([yDomainMin, yDomainMax === yDomainMin ? yDomainMin + 100 : yDomainMax])
             .nice()
             .range([height - margin.bottom, margin.top]);
 

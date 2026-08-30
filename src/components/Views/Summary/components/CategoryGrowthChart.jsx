@@ -47,6 +47,18 @@ const CategoryGrowthChart = ({ data }) => {
         const svg = d3.select(svgRef.current);
         svg.selectAll('*').remove();
 
+        if (!data.years || data.years.length === 0) {
+            svg.append('text')
+                .attr('x', width / 2)
+                .attr('y', height / 2)
+                .attr('text-anchor', 'middle')
+                .attr('fill', '#839496')
+                .style('font-family', 'Outfit, sans-serif')
+                .style('font-size', '15px')
+                .text('No category growth data available');
+            return;
+        }
+
         const margin = { top: 30, right: 30, bottom: 100, left: 70 };
         const seriesNames = Object.keys(colors);
 
@@ -54,11 +66,15 @@ const CategoryGrowthChart = ({ data }) => {
             .domain(data.years)
             .range([margin.left, width - margin.right]);
 
+        const rawMin = d3.min(formattedData, d => d3.min(seriesNames, k => d[k]));
+        const rawMax = d3.max(formattedData, d => d3.max(seriesNames, k => d[k]));
+        const safeMin = (rawMin !== undefined && !isNaN(rawMin) && isFinite(rawMin)) ? (rawMin < 0 ? rawMin * 1.1 : 0) : -10;
+        const safeMax = (rawMax !== undefined && !isNaN(rawMax) && isFinite(rawMax)) ? (rawMax > 0 ? rawMax * 1.1 : 100) : 100;
+        const yDomainMin = safeMin;
+        const yDomainMax = safeMax <= safeMin ? safeMin + 50 : safeMax;
+
         const y = d3.scaleLinear()
-            .domain([
-                (d3.min(formattedData, d => d3.min(seriesNames, k => d[k])) || 0) * 1.1,
-                (d3.max(formattedData, d => d3.max(seriesNames, k => d[k])) || 100) * 1.1
-            ])
+            .domain([yDomainMin, yDomainMax])
             .nice()
             .range([height - margin.bottom, margin.top]);
 

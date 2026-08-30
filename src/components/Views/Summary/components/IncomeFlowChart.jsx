@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
-import { sankey as d3Sankey, sankeyLinkHorizontal } from 'd3-sankey';
+import { sankey as d3Sankey, sankeyLeft, sankeyLinkHorizontal } from 'd3-sankey';
 
 const colorMap = {
     'Gross Income': '#268bd2',
@@ -10,6 +10,7 @@ const colorMap = {
     '401k': '#6c71c4',
     'Stock': '#2aa198',
     'Cash': '#268bd2',
+    'Cash Flow': '#859900',
     'Expenses': '#d33682',
     'Rent': '#d33682',
     'Car': '#de5599',
@@ -38,35 +39,62 @@ const IncomeFlowChart = ({ data, selectedYear, setSelectedYear, yearOptions }) =
     }, []);
 
     useEffect(() => {
-        if (!data.sankeyData || !svgRef.current) return;
+        if (!svgRef.current) return;
 
         const { width, height } = dimensions;
         const svg = d3.select(svgRef.current);
         svg.selectAll('*').remove();
+
+        if (!data.sankeyData || data.sankeyData.length === 0) {
+            svg.append('text')
+                .attr('x', width / 2)
+                .attr('y', height / 2)
+                .attr('text-anchor', 'middle')
+                .attr('fill', '#839496')
+                .style('font-family', 'Outfit, sans-serif')
+                .style('font-size', '15px')
+                .text('No flow data available for this selection');
+            return;
+        }
 
         const margin = { top: 40, right: 40, bottom: 40, left: 40 };
 
         // 1. Process Nodes and Links
         const nodesSet = new Set();
         data.sankeyData.forEach(d => {
-            nodesSet.add(d.from);
-            nodesSet.add(d.to);
+            if (d.from) nodesSet.add(d.from);
+            if (d.to) nodesSet.add(d.to);
         });
         const nodes = Array.from(nodesSet).map(name => ({ name }));
         const nodeIndex = new Map(nodes.map((d, i) => [d.name, i]));
 
-        const links = data.sankeyData.map(d => ({
-            source: nodeIndex.get(d.from),
-            target: nodeIndex.get(d.to),
-            value: d.flow,
-            fromName: d.from,
-            toName: d.to
-        }));
+        const links = data.sankeyData
+            .filter(d => nodeIndex.has(d.from) && nodeIndex.has(d.to) && d.flow > 0)
+            .map(d => ({
+                source: nodeIndex.get(d.from),
+                target: nodeIndex.get(d.to),
+                value: d.flow,
+                fromName: d.from,
+                toName: d.to
+            }));
+
+        if (nodes.length < 2 || links.length === 0) {
+            svg.append('text')
+                .attr('x', width / 2)
+                .attr('y', height / 2)
+                .attr('text-anchor', 'middle')
+                .attr('fill', '#839496')
+                .style('font-family', 'Outfit, sans-serif')
+                .style('font-size', '15px')
+                .text('No flow data available for this selection');
+            return;
+        }
 
         // 2. Initialize Sankey
         const sankey = d3Sankey()
+            .nodeAlign(sankeyLeft)
             .nodeWidth(30)
-            .nodePadding(40)
+            .nodePadding(30)
             .extent([[margin.left, margin.top], [width - margin.right, height - margin.bottom]]);
 
         let { nodes: sankeyNodes, links: sankeyLinks } = sankey({
@@ -81,10 +109,10 @@ const IncomeFlowChart = ({ data, selectedYear, setSelectedYear, yearOptions }) =
             if (node.name === 'Gross Income') {
                 node.x0 = margin.left;
                 node.x1 = margin.left + 30;
-            } else if (node.name === 'Tax' || node.name === 'Net Income') {
+            } else if (['Tax', 'Net Income', '401k'].includes(node.name)) {
                 node.x0 = margin.left + colWidth;
                 node.x1 = margin.left + colWidth + 30;
-            } else if (['Total Savings', 'Expenses', 'Cash Flow', 'Cash'].includes(node.name)) {
+            } else if (['Total Savings', 'Expenses', 'Cash Flow', 'Cash', 'Stock', 'Savings'].includes(node.name)) {
                 node.x0 = margin.left + colWidth * 2;
                 node.x1 = margin.left + colWidth * 2 + 30;
             } else {
@@ -171,27 +199,20 @@ const IncomeFlowChart = ({ data, selectedYear, setSelectedYear, yearOptions }) =
     return (
         <div className="chart-card wide glow" style={{ overflow: 'hidden' }}>
             <div className="card-head">
-                <h3>Income Flow ({selectedYear === 'All' ? 'All Time' : selectedYear})</h3>
-                <div className="year-selector" style={{ display: 'flex', gap: '8px' }}>
-                    {yearOptions && yearOptions.map((year) => (
-                        <button
-                            key={year}
-                            onClick={() => setSelectedYear(year)}
-                            style={{
-                                background: selectedYear === year ? 'rgba(16, 185, 129, 0.3)' : 'rgba(253, 246, 227, 0.05)',
-                                color: selectedYear === year ? '#10b981' : '#839496',
-                                border: `1px solid ${selectedYear === year ? '#10b981' : 'rgba(131, 148, 150, 0.2)'}`,
-                                borderRadius: '4px',
-                                padding: '4px 12px',
-                                fontSize: '13px',
-                                cursor: 'pointer',
-                                fontWeight: '600',
-                                transition: 'all 0.2s ease'
-                            }}
-                        >
-                            {year}
-                        </button>
-                    ))}
+                <h3>Income Flow</h3>
+                <div className="year-selector">
+                    <select
+                        id="income-flow-year-select"
+                        value={selectedYear}
+                        onChange={(e) => setSelectedYear(e.target.value)}
+                        className="year-dropdown"
+                    >
+                        {yearOptions && yearOptions.map((year) => (
+                            <option key={year} value={year}>
+                                {year}
+                            </option>
+                        ))}
+                    </select>
                 </div>
             </div>
             <div ref={containerRef} style={{ height: '450px', width: '100%' }}>

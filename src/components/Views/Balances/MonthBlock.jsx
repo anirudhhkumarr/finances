@@ -25,8 +25,7 @@ const MonthBlock = ({ data }) => {
         18: 'Amex',
         21: 'US Bank',
         27: 'PG&E',
-        28: 'Xfinity',
-        31: 'Salary'
+        28: 'Xfinity'
     };
 
     const overrides = appData.balanceOverrides || {};
@@ -57,6 +56,8 @@ const MonthBlock = ({ data }) => {
             isOverride = true;
         }
 
+        const autoCategory = (d === 15 || d === daysInMonth) ? 'Salary' : (recurringExpenses[d] || '');
+
         if (dayTxns.length > 0) {
             dayTxns.forEach((txn) => {
                 chronologicalRows.push({
@@ -76,7 +77,7 @@ const MonthBlock = ({ data }) => {
                 balance: runningBal,
                 autoBal: autoBal, // Store for comparison
                 txn: null,
-                autoCategory: recurringExpenses[d] || '',
+                autoCategory,
                 isFirst: true,
                 isOverride
             });

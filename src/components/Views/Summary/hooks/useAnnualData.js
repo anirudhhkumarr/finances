@@ -60,7 +60,7 @@ export const useAnnualData = (selectedYear) => {
             totalExpense += cardsSum;
 
             const impliedSavings = net - totalExpense;
-            const cashFlow = Math.max(0, impliedSavings - definedSavings);
+            const cashFlow = Math.max(0, impliedSavings - savingsStock);
 
             // Rates
             const taxRate = gross > 0 ? (tax / gross) * 100 : 0;
@@ -94,16 +94,17 @@ export const useAnnualData = (selectedYear) => {
                 return ((annualizedCurr - old) / old) * 100;
             };
 
-            const nonRent = item.expense - (item.catTotals.rent || 0);
-            const prevNonRent = prev ? (prev.expense - (prev.catTotals.rent || 0)) : 0;
+            const nonRent = item.expense - (item.catTotals?.rent || 0);
+            const prevNonRent = prev ? (prev.expense - (prev.catTotals?.rent || 0)) : 0;
 
             return {
                 ...item,
+                runRateFactor,
                 growth: safeGrowth(item.net, prev?.net),
                 taxGrowth: safeGrowth(item.tax, prev?.tax),
                 savingsGrowth: safeGrowth(item.savings, prev?.savings),
                 expenseGrowth: safeGrowth(item.expense, prev?.expense),
-                rentGrowth: safeGrowth(item.catTotals.rent, prev?.catTotals?.rent),
+                rentGrowth: safeGrowth(item.catTotals?.rent, prev?.catTotals?.rent),
                 nonRentGrowth: safeGrowth(nonRent, prevNonRent),
                 // Keep minimal required
             };
@@ -115,25 +116,34 @@ export const useAnnualData = (selectedYear) => {
             sankeyMetrics = computeMetrics(records, 'All Time');
         } else {
             const yMetrics = annualMetrics.find(m => m.year === selectedYear);
-            sankeyMetrics = yMetrics || computeMetrics([], selectedYear);
+            sankeyMetrics = yMetrics || computeMetrics(records.filter(r => r.id.startsWith(selectedYear)), selectedYear);
         }
 
         const sankeyData = [];
         if (sankeyMetrics.gross > 0) {
-            // Tier 1
-            sankeyData.push({ from: 'Gross Income', to: 'Tax', flow: sankeyMetrics.tax });
-            sankeyData.push({ from: 'Gross Income', to: 'Net Income', flow: sankeyMetrics.net });
+            // Tier 1 (Directly from Gross Income)
+            if (sankeyMetrics.tax > 0) {
+                sankeyData.push({ from: 'Gross Income', to: 'Tax', flow: sankeyMetrics.tax });
+            }
+            if (sankeyMetrics.savings401k > 0) {
+                sankeyData.push({ from: 'Gross Income', to: '401k', flow: sankeyMetrics.savings401k });
+            }
+            if (sankeyMetrics.net > 0) {
+                sankeyData.push({ from: 'Gross Income', to: 'Net Income', flow: sankeyMetrics.net });
+            }
 
-            // Tier 2
-            if (sankeyMetrics.savings > 0) sankeyData.push({ from: 'Net Income', to: 'Total Savings', flow: sankeyMetrics.savings });
-            if (sankeyMetrics.expense > 0) sankeyData.push({ from: 'Net Income', to: 'Expenses', flow: sankeyMetrics.expense });
-            if (sankeyMetrics.cashFlow > 0) sankeyData.push({ from: 'Net Income', to: 'Cash Flow', flow: sankeyMetrics.cashFlow });
+            // Tier 2 (Directly from Net Income)
+            if (sankeyMetrics.expense > 0) {
+                sankeyData.push({ from: 'Net Income', to: 'Expenses', flow: sankeyMetrics.expense });
+            }
+            if (sankeyMetrics.savingsStock > 0) {
+                sankeyData.push({ from: 'Net Income', to: 'Stock', flow: sankeyMetrics.savingsStock });
+            }
+            if (sankeyMetrics.cashFlow > 0) {
+                sankeyData.push({ from: 'Net Income', to: 'Cash Flow', flow: sankeyMetrics.cashFlow });
+            }
 
-            // Tier 3a
-            if (sankeyMetrics.savings401k > 0) sankeyData.push({ from: 'Total Savings', to: '401k', flow: sankeyMetrics.savings401k });
-            if (sankeyMetrics.savingsStock > 0) sankeyData.push({ from: 'Total Savings', to: 'Stock', flow: sankeyMetrics.savingsStock });
-
-            // Tier 3b
+            // Tier 3 (From Expenses)
             Object.entries(sankeyMetrics.catTotals || {}).forEach(([cat, val]) => {
                 if (val > 0) {
                     const label = cat === 'usbank' ? 'US Bank' : cat === 'amex' ? 'Amex' : cat.charAt(0).toUpperCase() + cat.slice(1);

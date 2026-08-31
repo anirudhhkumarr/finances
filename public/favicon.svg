@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="100%" height="100%">
+  <defs>
+    <!-- Apple Electric Blue to Cyan Gradient -->
+    <linearGradient id="bankGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#007AFF"/>
+      <stop offset="100%" stop-color="#5AC8FA"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Pediment Roof -->
+  <path d="M16 4L3 11H29L16 4Z" fill="url(#bankGrad)"/>
+  
+  <!-- Architrave -->
+  <rect x="3.5" y="12" width="25" height="2" rx="0.75" fill="url(#bankGrad)"/>
+
+  <!-- 4 Classic Columns -->
+  <rect x="6" y="15" width="3.5" height="9.5" rx="1" fill="url(#bankGrad)"/>
+  <rect x="11.5" y="15" width="3.5" height="9.5" rx="1" fill="url(#bankGrad)"/>
+  <rect x="17" y="15" width="3.5" height="9.5" rx="1" fill="url(#bankGrad)"/>
+  <rect x="22.5" y="15" width="3.5" height="9.5" rx="1" fill="url(#bankGrad)"/>
+
+  <!-- Stepped Base -->
+  <rect x="3.5" y="25.5" width="25" height="2.5" rx="0.75" fill="url(#bankGrad)"/>
+</svg>

@@ -7,14 +7,16 @@ const Balances = () => {
     const [months, setMonths] = useState(() => {
         const now = new Date();
         // If > 25th, start next month, else current
-        if (now.getDate() > 25) {
-            now.setMonth(now.getMonth() + 1); // e.g. Dec 26 -> Jan
-        }
+        const currentTarget = new Date(
+            now.getFullYear(),
+            now.getMonth() + (now.getDate() > 25 ? 1 : 0),
+            1
+        );
 
-        const current = { year: now.getFullYear(), month: now.getMonth() };
+        const current = { year: currentTarget.getFullYear(), month: currentTarget.getMonth() };
 
         // Previous Month
-        const prevDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        const prevDate = new Date(currentTarget.getFullYear(), currentTarget.getMonth() - 1, 1);
         const prev = { year: prevDate.getFullYear(), month: prevDate.getMonth() };
 
         return [current, prev];

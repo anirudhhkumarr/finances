@@ -98,9 +98,13 @@ export const fillDataGaps = (existingRecords = [], transactions = []) => {
     const startMonth = 0; // Jan
 
     const now = new Date();
-    if (now.getDate() > 25) now.setMonth(now.getMonth() + 1);
-    const endYear = now.getFullYear();
-    const endMonth = now.getMonth();
+    const targetDate = new Date(
+        now.getFullYear(),
+        now.getMonth() + (now.getDate() > 25 ? 1 : 0),
+        1
+    );
+    const endYear = targetDate.getFullYear();
+    const endMonth = targetDate.getMonth();
 
     const recordMap = new Map();
     existingRecords.forEach(r => recordMap.set(r.id, r));

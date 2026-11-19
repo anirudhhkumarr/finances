@@ -551,6 +551,29 @@ body, html {
   height: 36px;
 }
 
+/* Grand Total Row */
+.dc-total-row td {
+  position: static;
+  top: auto !important;
+  background: var(--card-bg);
+  border-top: 2px solid var(--accent-color, #268bd2);
+  border-bottom: 2px solid var(--card-border);
+  font-weight: 800;
+  text-align: right;
+  height: 38px;
+}
+
+.dc-total-row td.sticky-col-month {
+  position: -webkit-sticky;
+  position: sticky;
+  left: 0;
+  top: auto !important;
+  z-index: 55;
+  background: var(--card-bg);
+  border-top: 2px solid var(--accent-color, #268bd2);
+  border-right: 2px solid var(--card-border);
+}
+
 /* Data Rows */
 .dc-data-row:hover td {
   background-color: var(--bg-secondary);

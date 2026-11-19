@@ -212,6 +212,37 @@ const DataEntry = () => {
         });
     }, [appData.records]);
 
+    const grandTotals = useMemo(() => {
+        const grand = {
+            income: { gross: 0, tax: 0, net: 0, other: 0, _total: 0 },
+            savings: { '401k': 0, stock: 0, _total: 0 },
+            expenses: { rent: 0, car: 0, chase: 0, amex: 0, discover: 0, usbank: 0, other: 0, _total: 0 }
+        };
+
+        yearsData.forEach(({ totals }) => {
+            grand.income.gross += totals.income.gross;
+            grand.income.tax += totals.income.tax;
+            grand.income.net += totals.income.net;
+            grand.income.other += totals.income.other;
+            grand.income._total += totals.income._total;
+
+            grand.savings['401k'] += totals.savings['401k'];
+            grand.savings.stock += totals.savings.stock;
+            grand.savings._total += totals.savings._total;
+
+            grand.expenses.rent += totals.expenses.rent;
+            grand.expenses.car += totals.expenses.car;
+            grand.expenses.discover += totals.expenses.discover;
+            grand.expenses.amex += totals.expenses.amex;
+            grand.expenses.usbank += totals.expenses.usbank;
+            grand.expenses.chase += totals.expenses.chase;
+            grand.expenses.other += totals.expenses.other;
+            grand.expenses._total += totals.expenses._total;
+        });
+
+        return grand;
+    }, [yearsData]);
+
     return (
         <div className="data-entry-wrapper">
             <table className="dc-table">
@@ -396,6 +427,52 @@ const DataEntry = () => {
                         );
                     })}
                 </tbody>
+                <tfoot className="dc-tfoot">
+                    <tr className="dc-year-row dc-total-row">
+                        <td className="sticky-col-month year-toggle" style={{ cursor: 'default' }}>
+                            <div className="dc-sticky-content">
+                                <span style={{ marginLeft: 8, fontWeight: 800 }}>Total</span>
+                            </div>
+                        </td>
+
+                        {/* Income Grand Total */}
+                        {groupState.income ? (
+                            <>
+                                <DataCell isSummary value={grandTotals.income.gross} />
+                                <DataCell isSummary value={grandTotals.income.tax} />
+                                <DataCell isSummary value={grandTotals.income.net} />
+                                <DataCell isSummary value={grandTotals.income.other} />
+                            </>
+                        ) : (
+                            <DataCell isSummary value={grandTotals.income._total} />
+                        )}
+
+                        {/* Savings Grand Total */}
+                        {groupState.savings ? (
+                            <>
+                                <DataCell isSummary value={grandTotals.savings['401k']} />
+                                <DataCell isSummary value={grandTotals.savings.stock} />
+                            </>
+                        ) : (
+                            <DataCell isSummary value={grandTotals.savings._total} />
+                        )}
+
+                        {/* Expenses Grand Total */}
+                        {groupState.expenses ? (
+                            <>
+                                <DataCell isSummary value={grandTotals.expenses.rent} />
+                                <DataCell isSummary value={grandTotals.expenses.car} />
+                                <DataCell isSummary value={grandTotals.expenses.discover} />
+                                <DataCell isSummary value={grandTotals.expenses.amex} />
+                                <DataCell isSummary value={grandTotals.expenses.usbank} />
+                                <DataCell isSummary value={grandTotals.expenses.chase} />
+                                <DataCell isSummary value={grandTotals.expenses.other} />
+                            </>
+                        ) : (
+                            <DataCell isSummary value={grandTotals.expenses._total} />
+                        )}
+                    </tr>
+                </tfoot>
             </table>
         </div>
     );

@@ -83,6 +83,24 @@ const Spreadsheet = () => {
         return Object.entries(groups).sort((a, b) => b[0].localeCompare(a[0]));
     }, [appData.records]);
 
+    const grandTotal = useMemo(() => {
+        const grand = {
+            income: { gross: 0, net: 0, other: 0 },
+            savings: { tax: 0, '401k': 0, stock: 0 },
+            expenses: { rent: 0, car: 0, discover: 0, amex: 0, usbank: 0, chase: 0, other: 0 }
+        };
+
+        (appData.records || []).forEach(r => {
+            const add = (cat, f) => grand[cat][f] += (r[cat]?.[f] || 0);
+            add('income', 'gross'); add('income', 'net'); add('income', 'other');
+            add('savings', 'tax'); add('savings', '401k'); add('savings', 'stock');
+            add('expenses', 'rent'); add('expenses', 'car'); add('expenses', 'discover');
+            add('expenses', 'amex'); add('expenses', 'usbank'); add('expenses', 'chase'); add('expenses', 'other');
+        });
+
+        return grand;
+    }, [appData.records]);
+
     const isFieldReadOnly = (recordId, group, field) => {
         if (recordId < '2026-01') return false;
         return Object.values(CategoryMap).some(target => target.group === group && target.field === field);
@@ -170,6 +188,22 @@ const Spreadsheet = () => {
                         );
                     })}
                 </tbody>
+                <tfoot>
+                    <tr className="year-summary-row total-row">
+                        <td className="sticky-col year-cell" style={{ fontWeight: 800 }}>Total</td>
+                        {expandedGroups.income ? (
+                            <><td className="summary-cell">{grandTotal.income.gross.toLocaleString()}</td><td className="summary-cell">{grandTotal.income.net.toLocaleString()}</td><td className="summary-cell">{grandTotal.income.other.toLocaleString()}</td></>
+                        ) : <td className="summary-cell highlight-total">{(grandTotal.income.net + grandTotal.income.other).toLocaleString()}</td>}
+
+                        {expandedGroups.savings ? (
+                            <><td className="summary-cell">{grandTotal.savings.tax.toLocaleString()}</td><td className="summary-cell">{grandTotal.savings['401k'].toLocaleString()}</td><td className="summary-cell">{grandTotal.savings.stock.toLocaleString()}</td></>
+                        ) : <td className="summary-cell highlight-total">{(grandTotal.savings.tax + grandTotal.savings['401k'] + grandTotal.savings.stock).toLocaleString()}</td>}
+
+                        {expandedGroups.expenses ? (
+                            <><td className="summary-cell">{grandTotal.expenses.rent.toLocaleString()}</td><td className="summary-cell">{grandTotal.expenses.car.toLocaleString()}</td><td className="summary-cell">{grandTotal.expenses.discover.toLocaleString()}</td><td className="summary-cell">{grandTotal.expenses.amex.toLocaleString()}</td><td className="summary-cell">{grandTotal.expenses.usbank.toLocaleString()}</td><td className="summary-cell">{grandTotal.expenses.chase.toLocaleString()}</td><td className="summary-cell">{grandTotal.expenses.other.toLocaleString()}</td></>
+                        ) : <td className="summary-cell highlight-total">{Object.values(grandTotal.expenses).reduce((a, b) => a + b, 0).toLocaleString()}</td>}
+                    </tr>
+                </tfoot>
             </table>
         </div>
     );
